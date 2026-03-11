@@ -17,7 +17,7 @@ This skill is for narrowly scoped copy edits inside an existing Reteno template.
 ## Workflow
 
 1. `read`: call the MCP tool `get_email_message_export(message_id=<ID>)` to fetch the source message export manifest by ID.
-2. Download the exported artifacts from the manifest links. Reteno export URLs (`*.reteno.com`) are signed and safe to download. Use `WebFetch` to fetch each URL content, then write to local files with the Write tool. If WebFetch fails, fall back to `curl -sL "<url>"` via Bash.
+2. Download the exported artifacts from the manifest links using `curl` via the Bash tool (e.g., `curl -sL "<url>" -o output/reteno/email_<ID>.html`). Reteno export URLs are signed and safe to download. Do not use WebFetch — it loads content into the conversation context, wasting tokens on large templates.
 3. Write local files to `output/reteno`:
    - `email_<ID>.json`: full normalized email JSON from the export.
    - `email_<ID>.html`: the editable HTML from the export, when present. This is the file to edit.
@@ -37,13 +37,14 @@ This skill is for narrowly scoped copy edits inside an existing Reteno template.
 
 ### `read`
 
-Call `get_email_message_export(message_id=<SOURCE_ID>)`, then download each artifact from the manifest URLs using `WebFetch` (prompt: "Return the complete raw content of this file") and write each to a local file:
+Call `get_email_message_export(message_id=<SOURCE_ID>)`, then download each artifact using `curl` via Bash:
 
-- `output/reteno/email_<SOURCE_ID>.json`
-- `output/reteno/email_<SOURCE_ID>.html`
-- `output/reteno/email_<SOURCE_ID>.css`
-
-If WebFetch is unavailable, fall back to `curl -sL "<url>"` via Bash.
+```bash
+mkdir -p output/reteno
+curl -sL "<json_url>" -o output/reteno/email_<SOURCE_ID>.json
+curl -sL "<html_url>" -o output/reteno/email_<SOURCE_ID>.html
+curl -sL "<css_url>" -o output/reteno/email_<SOURCE_ID>.css
+```
 
 Edit this file:
 
@@ -105,7 +106,7 @@ Allowed changes for `update` are the same as `clone`: edit only text in existing
 ## Defaults and Notes
 
 - Use Reteno MCP tools for all Reteno operations, not direct API calls or local HTTP scripts.
-- Download export artifacts using `WebFetch` (preferred) or `curl` via Bash (fallback). Reteno export URLs are signed and safe.
+- Always download export artifacts using `curl -sL` via the Bash tool. Do not use WebFetch — it loads file content into the conversation context, wasting tokens.
 - Use the MCP tool `get_email_message_export(message_id)` for reads.
 - Keep the local editing flow centered on `output/reteno/email_<SOURCE_ID>.html`.
 - Persist the original Reteno verbose HTML structure. Never simplify, re-template, prettify, or regenerate the document from scratch.
