@@ -17,7 +17,7 @@ This skill is for narrowly scoped copy edits inside an existing Reteno template.
 ## Workflow
 
 1. `read`: call the MCP tool `get_email_message_export(message_id=<ID>)` to fetch the source message export manifest by ID.
-2. Use the manifest download links to retrieve the source files without pulling the full email body into the MCP tool response.
+2. Download the exported artifacts from the manifest links using `curl` via the Bash tool (e.g., `curl -sL "<url>" -o output/reteno/email_<ID>.html`). Reteno export URLs are signed and safe to download. Do not use WebFetch for binary/HTML downloads — always use `curl`.
 3. Write local files to `output/reteno`:
    - `email_<ID>.json`: full normalized email JSON from the export.
    - `email_<ID>.html`: the editable HTML from the export, when present. This is the file to edit.
@@ -37,7 +37,16 @@ This skill is for narrowly scoped copy edits inside an existing Reteno template.
 
 ### `read`
 
-Call `get_email_message_export(message_id=<SOURCE_ID>)`, download the exported artifacts from the manifest links, then write the local files listed above.
+Call `get_email_message_export(message_id=<SOURCE_ID>)`, then download each artifact from the manifest links using `curl` via the Bash tool:
+
+```bash
+mkdir -p output/reteno
+curl -sL "<json_url>" -o output/reteno/email_<SOURCE_ID>.json
+curl -sL "<html_url>" -o output/reteno/email_<SOURCE_ID>.html
+curl -sL "<css_url>" -o output/reteno/email_<SOURCE_ID>.css
+```
+
+Write the local files listed above.
 
 Edit this file:
 
@@ -98,7 +107,8 @@ Allowed changes for `update` are the same as `clone`: edit only text in existing
 
 ## Defaults and Notes
 
-- Use Reteno MCP tools, not direct API calls or local HTTP scripts.
+- Use Reteno MCP tools for all Reteno operations, not direct API calls or local HTTP scripts.
+- Always download export artifacts using `curl` via the Bash tool. Do not use WebFetch for Reteno file downloads.
 - Use the MCP tool `get_email_message_export(message_id)` for reads.
 - Keep the local editing flow centered on `output/reteno/email_<SOURCE_ID>.html`.
 - Persist the original Reteno verbose HTML structure. Never simplify, re-template, prettify, or regenerate the document from scratch.
