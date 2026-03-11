@@ -1,0 +1,22 @@
+{
+  "name": "reteno-plugins",
+  "owner": {
+    "name": "Reteno",
+    "email": "dev@reteno.com"
+  },
+  "metadata": {
+    "description": "Reteno skills and tools for Claude Code",
+    "version": "0.1.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "reteno",
+      "source": "./plugins/reteno",
+      "description": "Reteno email editor, web funnel analyzer, and MCP integration",
+      "version": "0.1.0",
+      "category": "marketing",
+      "tags": ["reteno", "email", "funnel", "marketing"]
+    }
+  ]
+}

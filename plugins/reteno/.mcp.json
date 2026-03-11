@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "reteno": {
+      "type": "http",
+      "url": "https://mcp.reteno.com"
+    }
+  }
+}
