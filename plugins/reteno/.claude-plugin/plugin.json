@@ -1,7 +1,7 @@
 {
   "name": "reteno",
   "description": "Reteno email editor, web funnel analyzer, and MCP integration",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "author": {
     "name": "Reteno",
     "email": "dev@reteno.com"
