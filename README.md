@@ -1,5 +1,7 @@
 # Reteno Plugins for Claude Code
 
+> **Research Preview** — This plugin is in early development. Skills, MCP tools, and plugin structure may change without notice.
+
 A Claude Code plugin marketplace providing Reteno integration skills.
 
 ## Installation
