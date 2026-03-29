@@ -1,7 +1,7 @@
 {
   "name": "reteno",
   "version": "0.2.0",
-  "description": "Reteno email editing and web funnel analysis for AI coding agents.",
+  "description": "Reteno's AI agent. Less clicking, more doing.",
   "author": {
     "name": "Reteno",
     "email": "dev@reteno.com",
@@ -15,8 +15,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Reteno",
-    "shortDescription": "Reteno email editing and funnel analysis",
-    "longDescription": "Bundle reusable Reteno workflows for editing existing email templates through MCP and analyzing onboarding funnels with Playwright.",
+    "shortDescription": "Reteno's AI agent. Less clicking, more doing.",
+    "longDescription": "Reteno's AI agent for getting work done faster with less clicking and more doing.",
     "developerName": "Reteno",
     "category": "Marketing",
     "capabilities": ["Read", "Write"],
