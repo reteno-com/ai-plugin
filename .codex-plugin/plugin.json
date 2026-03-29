@@ -27,6 +27,8 @@
       "Use Reteno to read or update an existing Reteno email message by ID.",
       "Use Reteno to analyze an onboarding funnel URL and produce a step-by-step summary."
     ],
-    "brandColor": "#FC531F"
+    "brandColor": "#FC531F",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

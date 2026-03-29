@@ -1,7 +1,7 @@
 {
-  "name": "reteno-repo",
+  "name": "reteno-plugins",
   "interface": {
-    "displayName": "Reteno Repo Plugins"
+    "displayName": "Reteno Plugins"
   },
   "plugins": [
     {

@@ -54,6 +54,8 @@ To test this repo as a Codex plugin:
 3. Open the plugin directory and select the repo marketplace.
 4. Install or enable `Reteno`.
 
+For a personal local marketplace on a new machine, use `reteno-plugins` as the marketplace name and `Reteno Plugins` as the marketplace display name.
+
 The Codex plugin manifest lives at:
 
 ```text
