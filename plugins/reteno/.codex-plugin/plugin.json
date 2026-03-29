@@ -1,0 +1,32 @@
+{
+  "name": "reteno",
+  "version": "0.2.0",
+  "description": "Reteno email editing and web funnel analysis for AI coding agents.",
+  "author": {
+    "name": "Reteno",
+    "email": "dev@reteno.com",
+    "url": "https://reteno.com/"
+  },
+  "homepage": "https://github.com/reteno-com/ai-plugin",
+  "repository": "https://github.com/reteno-com/ai-plugin",
+  "license": "UNLICENSED",
+  "keywords": ["reteno", "email", "funnel", "marketing", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Reteno",
+    "shortDescription": "Reteno email editing and funnel analysis",
+    "longDescription": "Bundle reusable Reteno workflows for editing existing email templates through MCP and analyzing onboarding funnels with Playwright.",
+    "developerName": "Reteno",
+    "category": "Marketing",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://reteno.com/",
+    "privacyPolicyURL": "https://reteno.com/privacy-policy",
+    "termsOfServiceURL": "https://reteno.com/terms-of-use",
+    "defaultPrompt": [
+      "Use Reteno to read or update an existing Reteno email message by ID.",
+      "Use Reteno to analyze an onboarding funnel URL and produce a step-by-step summary."
+    ],
+    "brandColor": "#FC531F"
+  }
+}

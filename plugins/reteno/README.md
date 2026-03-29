@@ -1,6 +1,6 @@
 # Reteno Plugin
 
-Reteno email editor, web funnel analyzer, and MCP integration for Claude Code.
+Reteno email editor, web funnel analyzer, and MCP integration for Claude Code and Codex.
 
 ## Skills
 
@@ -25,4 +25,7 @@ python3 skills/web-funnel-analyzer/scripts/analyze_funnel.py \
 
 ## MCP Server
 
-This plugin connects to the Reteno MCP server at `https://mcp.reteno.com` using OAuth 2.0. Authenticate via `/mcp` in Claude Code after installing the plugin.
+This plugin connects to the Reteno MCP server at `https://mcp.reteno.com` using OAuth 2.0.
+
+- In Claude Code, authenticate via `/mcp` after installing the plugin.
+- In Codex, authenticate during plugin setup or on first MCP use.

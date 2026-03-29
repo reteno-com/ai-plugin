@@ -1,44 +1,83 @@
-# Reteno Plugins for Claude Code
+# Reteno AI Plugin
 
-> **Research Preview** — This plugin is in early development. Skills, MCP tools, and plugin structure may change without notice.
+Reteno bundles reusable AI-agent workflows for Reteno email editing and onboarding funnel analysis.
 
-A Claude Code plugin marketplace providing Reteno integration skills.
+The repository now supports both:
 
-## Installation
+- Claude Code plugins via Anthropic's `.claude-plugin` format
+- Codex plugins via OpenAI's `.codex-plugin` format
+
+The shared plugin payload lives in `./plugins/reteno` and contains:
+
+- `skills/` used by both platforms
+- `.mcp.json` for the Reteno MCP server at `https://mcp.reteno.com`
+
+## Repository Layout
+
+- `plugins/reteno` - shared plugin package
+- `.claude-plugin/marketplace.json` - Claude marketplace catalog
+- `.agents/plugins/marketplace.json` - Codex repo marketplace catalog
+
+## Claude Code
 
 Add the marketplace:
 
-```
-/plugin marketplace add reteno-com/claude-plugin
+```bash
+/plugin marketplace add reteno-com/ai-plugin
 ```
 
 Install the plugin:
 
-```
+```bash
 /plugin install reteno@reteno-plugins
+```
+
+For local development:
+
+```bash
+claude --plugin-dir ./plugins/reteno
+```
+
+Skills are namespaced as:
+
+- `/reteno:reteno-email-editor`
+- `/reteno:web-funnel-analyzer`
+
+## Codex
+
+Codex currently supports plugin installation through a marketplace file. This repo includes a repo-scoped marketplace at `.agents/plugins/marketplace.json`.
+
+To test this repo as a Codex plugin:
+
+1. Open the repo in Codex.
+2. Restart Codex so it picks up `.agents/plugins/marketplace.json`.
+3. Open the plugin directory and select the repo marketplace.
+4. Install or enable `Reteno`.
+
+The Codex plugin manifest lives at:
+
+```text
+plugins/reteno/.codex-plugin/plugin.json
 ```
 
 ## Authenticate with Reteno
 
 After installation, authenticate with the Reteno MCP server:
 
-```
-/mcp
-```
+- Claude Code: open `/mcp`, select `reteno`, and complete the OAuth flow.
+- Codex: enable the plugin and complete the MCP authentication prompt on install or first use.
 
-Select "reteno" and follow the OAuth flow in your browser.
+## Included Workflows
 
-## Available Skills
+### `reteno-email-editor`
 
-| Skill | Description |
-|-------|-------------|
-| `/reteno:reteno-email-editor` | Read, clone, and update Reteno email templates via MCP |
-| `/reteno:web-funnel-analyzer` | Capture and analyze onboarding funnel quizzes |
+Read, clone, and update Reteno email templates through the Reteno MCP server while preserving the original builder HTML and CSS structure.
 
-## Local Development
+### `web-funnel-analyzer`
 
-Test locally without installing:
+Open an onboarding funnel in Playwright, capture screens and text step-by-step, and write a reusable funnel summary for email creation.
 
-```bash
-claude --plugin-dir ./plugins/reteno
-```
+## References
+
+- [Anthropic Claude Code plugins](https://code.claude.com/docs/en/plugins)
+- [OpenAI Codex Build plugins](https://developers.openai.com/codex/plugins/build)
