@@ -16,7 +16,7 @@
   "interface": {
     "displayName": "Reteno",
     "shortDescription": "Reteno's AI agent. Less clicking, more doing.",
-    "longDescription": "Reteno's AI agent for getting work done faster with less clicking and more doing.",
+    "longDescription": "Meet the Reteno Agent: the teammate who never gets tired, never says \"I'll circle back,\" and is suspiciously enthusiastic about doing the boring stuff for you. It helps your team work with Reteno in Codex or Cowork, answer questions, dig things up, and keep workflows moving without turning every task into a small corporate tragedy. Think of it as an extra pair of hands, except faster, calmer, and much better at remembering where things are.",
     "developerName": "Reteno",
     "category": "Marketing",
     "capabilities": ["Read", "Write"],
