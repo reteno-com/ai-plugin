@@ -7,14 +7,14 @@ The repository now supports both:
 - Claude Code plugins via Anthropic's `.claude-plugin` format
 - Codex plugins via OpenAI's `.codex-plugin` format
 
-The shared plugin payload lives in `./plugins/reteno` and contains:
-
-- `skills/` used by both platforms
-- `.mcp.json` for the Reteno MCP server at `https://mcp.reteno.com`
+Both platforms now install from the repository root.
 
 ## Repository Layout
 
-- `plugins/reteno` - shared plugin package
+- `.claude-plugin/plugin.json` - Claude plugin manifest at the repo root
+- `.codex-plugin/plugin.json` - Codex plugin manifest at the repo root
+- `skills/` - shared skill payload used by both platforms
+- `.mcp.json` - shared MCP definition at the repo root
 - `.claude-plugin/marketplace.json` - Claude marketplace catalog
 - `.agents/plugins/marketplace.json` - Codex repo marketplace catalog
 
@@ -35,7 +35,7 @@ Install the plugin:
 For local development:
 
 ```bash
-claude --plugin-dir ./plugins/reteno
+claude --plugin-dir ./
 ```
 
 Skills are namespaced as:
@@ -45,7 +45,7 @@ Skills are namespaced as:
 
 ## Codex
 
-Codex currently supports plugin installation through a marketplace file. This repo includes a repo-scoped marketplace at `.agents/plugins/marketplace.json`.
+Codex currently supports plugin installation through a marketplace file. This repo includes a repo-scoped marketplace at `.agents/plugins/marketplace.json`, and that marketplace points to the repository root plugin.
 
 To test this repo as a Codex plugin:
 
@@ -57,7 +57,7 @@ To test this repo as a Codex plugin:
 The Codex plugin manifest lives at:
 
 ```text
-plugins/reteno/.codex-plugin/plugin.json
+.codex-plugin/plugin.json
 ```
 
 ## Authenticate with Reteno

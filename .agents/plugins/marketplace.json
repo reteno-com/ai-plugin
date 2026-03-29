@@ -8,7 +8,7 @@
       "name": "reteno",
       "source": {
         "source": "local",
-        "path": "./plugins/reteno"
+        "path": "./"
       },
       "policy": {
         "installation": "AVAILABLE",
