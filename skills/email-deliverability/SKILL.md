@@ -1,102 +1,43 @@
 ---
 name: email-deliverability
-description: Audit Reteno email deliverability technical setup by combining get_email_deliverability_setup MCP data with MXToolbox-like public DNS, host, and TLS checks. Use for SPF, DKIM, DMARC, sender setup, domain verification, tracking domain, short-link SSL, or technical setup audit requests.
-version: 0.1.0
+description: Audit Reteno email deliverability technical setup using live MCP configuration, public DNS and TLS. Use for SPF, DKIM/CNAME, DMARC, sender and Reply-To domains, required custom link domains or setup audits. Reports unavailable evidence separately from confirmed failures and applies the current Reteno customer checklist.
 ---
 
-# Email Deliverability
+# Email deliverability
 
-## Overview
+This is read-only. Call `get_email_deliverability_setup` for the selected account and save the
+fresh response locally. Resolve `<skill-dir>` from the installed plugin, not the working directory.
+The helper uses Python 3.11+ and `dnspython` from the plugin's pinned requirements.
 
-Use this skill for read-only technical setup audits of Reteno email deliverability. It combines Reteno MCP configuration with public DNS and HTTPS/TLS checks similar to the core checks a user would run in MXToolbox.
-
-Do not use MXToolbox as a third-party service in this version. Do not call Reteno mutation tools.
-
-## Requirements
-
-The audit helper needs the `dnspython` package for DNS checks. If it exits with a `dnspython is required` error, install it first (for example `pip3 install dnspython`) and re-run the helper.
-
-## Workflow
-
-1. Call Reteno MCP `get_email_deliverability_setup` for the selected organization.
-2. Save the MCP response under `output/email-deliverability/`, for example `setup_<orgId>_<UTC_TIMESTAMP>.json`.
-3. Run the audit helper:
-
-```bash
-python3 skills/email-deliverability/scripts/audit_technical_setup.py \
-  --input <setup-json-path> \
-  --output-dir output/email-deliverability
+```sh
+python3 <skill-dir>/scripts/audit_technical_setup.py --input <setup.json> \
+  --organization-id <authenticated-org-id> --output-dir output/email-deliverability
 ```
 
-4. Read the generated Markdown and JSON artifacts before answering.
-5. Answer with a concise summary focused on failing and warning checks first.
-6. Share the generated artifact paths only when the user explicitly asks for files.
+Read the JSON and Markdown results before answering. Lead with confirmed failures, followed
+by unavailable evidence and its practical effect. Never describe an incomplete audit as passed.
+DNS timeout, SERVFAIL, DNSSEC/network or query-budget failures are unavailable evidence.
+Only confirmed absence/mismatch against an applicable requirement is a failure.
 
-## Expected MCP Shape
+The October 6 checklist requires an effective DMARC `quarantine`/`reject` policy; `p=none` and
+`t=y` do not satisfy enforcement. SPF must be evaluated at the exact envelope/Return-Path domain
+with actual Reteno sending IPs, including mechanism order, qualifiers, includes, redirects and
+lookup limits. It does not inherit from the From domain or a parent. Preserve other authorized
+senders; `~all` and `-all` are both allowed. Do not recommend flattening solely from a theoretical
+maximum lookup count. The bounded evaluator reports unsupported macro/PTR evidence as unavailable.
 
-The audit helper expects `get_email_deliverability_setup` to return:
+DKIM follows CNAMEs and uses the Reteno `esputnik` selector as discovery fallback. Missing
+fallback evidence alone does not fail the customer. Validate active/in-flight selectors against
+account-specific expected names, record types and keys/targets; retired selectors are excluded.
+A customer-controlled custom link domain is mandatory for every Reteno organization. Confirm
+its selection, activation, CNAME target and TLS, including retained domains still used in old emails.
+`shortLinks.settings.enabled` controls UTM tagging; `destinationDomains` are redirect destinations,
+not expected DNS CNAME targets. `oneClickUnsubscribe.enabled` (configuration 371) does not prove
+unsubscribe headers; do not generate a header finding from it. BIMI/MTA-STS/TLS-RPT are optional.
 
-```json
-{
-  "orgId": 1234,
-  "generatedAt": "2026-05-17T00:00:00Z",
-  "domains": [
-    {
-      "id": 123,
-      "domain": "example.com",
-      "configuration": {},
-      "verificationHistory": {},
-      "warmupInfo": {},
-      "errors": []
-    }
-  ],
-  "sender": {
-    "mailingConfiguration": {},
-    "sendingDomains": [],
-    "publicInterface": {}
-  },
-  "shortLinks": {
-    "sslDomains": [],
-    "destinationDomains": [],
-    "settings": {}
-  },
-  "oneClickUnsubscribe": {
-    "enabled": true
-  }
-}
-```
-
-The `oneClickUnsubscribe` field is retained for MCP compatibility only. Do not turn it into a technical setup finding or recommendation.
-
-## Audit Coverage
-
-MCP-derived checks:
-- Domain configuration status, verification history, warmup info, and MCP errors.
-- Sender interface availability and sender-domain alignment.
-- Mailing configuration and sending domains.
-- Short-link SSL domain status.
-
-Public checks:
-- SPF TXT existence, duplicate SPF records, basic termination, and estimated DNS lookup budget.
-- DMARC TXT existence and policy strength.
-- DKIM selector checks only when the MCP payload exposes selector or record names; otherwise DKIM is marked skipped.
-- MX records for sender and reply domains.
-- CNAME/A/AAAA resolution for technical domains and short-link domains.
-- HTTPS/TLS certificate check for short-link domains.
-- BIMI, MTA-STS, and TLS-RPT as informational optional checks.
-
-## Output
-
-The helper writes:
-- `output/email-deliverability/technical_setup_<orgId>_<timestamp>.json`
-- `output/email-deliverability/technical_setup_<orgId>_<timestamp>.md`
-
-Use the Markdown for the human-facing answer and the JSON for detailed evidence.
-
-## Constraints
-
-- Read-only only.
-- Stay within the selected organization.
-- Never call Reteno create, update, delete, activate, deactivate, or verification-refresh endpoints.
-- Treat missing DKIM selector data as skipped, not as failed.
-- If DNS resolution fails, report the DNS error in the relevant check instead of guessing.
+If MCP exposes insufficient account reference details, report unavailable evidence and explain
+what is missing. Where those details are supplied by live settings or the user, prepare the
+[reference evidence file](references/checklist-evidence.md) and pass `--references <file>`.
+Do not guess an envelope hostname, sending IP, DKIM key, custom link CNAME or technical MX target.
+Technical MX documentation disagreements are not customer failures. Never refresh verification,
+change DNS/configuration or send test mail as part of an audit.

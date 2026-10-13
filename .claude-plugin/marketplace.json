@@ -6,16 +6,23 @@
   },
   "metadata": {
     "description": "Reteno skills and tools for Claude Code",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "plugins": [
     {
       "name": "reteno",
       "source": "./",
-      "description": "Reteno email editor, deliverability audits, messaging analytics, web funnel analyzer, and MCP integration",
-      "version": "0.3.0",
+      "description": "Reteno email creation, editing, localization, images, analytics, deliverability, Business Profile updates, segments and workflows",
+      "version": "0.4.0",
       "category": "marketing",
-      "tags": ["reteno", "email", "funnel", "marketing", "deliverability", "analytics"]
+      "tags": [
+        "reteno",
+        "email",
+        "funnel",
+        "marketing",
+        "deliverability",
+        "analytics"
+      ]
     }
   ]
 }

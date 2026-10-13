@@ -1,91 +1,46 @@
 # Reteno AI Plugin
 
-This repository contains installable releases of the Reteno plugin. Version 0.3.0.
+This repository contains installable releases of the Reteno plugin.
 
-Reteno bundles reusable AI-agent workflows for Reteno email editing, email deliverability audits, messaging analytics, and onboarding funnel analysis.
+Reteno 0.4.0 packages the same skills and compiled SDKs for Codex and Claude Code. It uses the
+host's authenticated Reteno MCP connection; local helpers do not need agent tokens, private
+repositories, publisher proxies or control-plane sessions.
 
-The repository now supports both:
+## Features
 
-- Claude Code plugins via Anthropic's `.claude-plugin` format
-- Codex plugins via OpenAI's `.codex-plugin` format
+| Skill | Capabilities |
+| --- | --- |
+| `reteno-email-editor` | HTML edits/localization with token and responsive-markup protection; all-language cloning, sender/Reply-To preservation, saved modules and 17 Fiteno templates |
+| `email-model-editor` | Native structure/style/content and preheader edits, base/target merging and saved desktop/mobile verification |
+| `email-from-reference` | Native email creation and explicit rebuilds from authorized references, supplied images and Reteno image jobs |
+| `email-deliverability` | DKIM/CNAME, enforced DMARC, envelope-domain SPF and mandatory custom link-domain checks; missing evidence stays unavailable |
+| `reteno-analytics` | Messaging/events, export date sharding with partial results, and audience analytics; exact active-workflow count remains limited |
+| `segment-designer` | Validated dynamic segments and unsaved audience counts using live account definitions |
+| `workflow-designer` | SDK edits and inactive workflow creation/cloning with hash preconditions and verified saves |
+| `business-profile` | Existing profile reads and scoped updates from supplied information/files/account emails; no website extraction |
+| `web-funnel-analyzer` | Existing Playwright onboarding-funnel capture, stopping at email collection |
 
-Both platforms now install from the repository root.
+Reteno only. Viber and Telegram channels are excluded. The plugin does not send, schedule or
+activate campaigns as part of authoring. Supplied-image hosting does not trigger paid generation.
 
-## Repository Layout
+## Install
 
-- `.claude-plugin/plugin.json` - Claude plugin manifest at the repo root
-- `.codex-plugin/plugin.json` - Codex plugin manifest at the repo root
-- `skills/` - shared skill payload used by both platforms
-- `.mcp.json` - shared MCP definition at the repo root
-- `.claude-plugin/marketplace.json` - Claude marketplace catalog
-- `.agents/plugins/marketplace.json` - Codex repo marketplace catalog
+Claude Code:
 
-## Claude Code
-
-Add the marketplace:
-
-```bash
+```text
 /plugin marketplace add reteno-com/ai-plugin
-```
-
-Install the plugin:
-
-```bash
 /plugin install reteno@reteno-plugins
 ```
 
-Skills are namespaced as:
+Skills use `/reteno:<skill-name>`. Complete OAuth in `/mcp` for `reteno`.
 
-- `/reteno:reteno-email-editor`
-- `/reteno:email-deliverability`
-- `/reteno:reteno-analytics`
-- `/reteno:web-funnel-analyzer`
+Codex: add this repository as a plugin marketplace and install `reteno@reteno-plugins`. The
+repository includes `.agents/plugins/marketplace.json` and the `.codex-plugin/plugin.json`
+manifest. Complete Reteno OAuth on installation or first use.
 
-## Codex
+Requirements: Python 3.11+, Node.js 20.18.1+. Install `requirements.txt` in the Python
+environment used by the host's helper commands for trusted HTTPS transfers and deliverability.
+Funnel capture additionally uses `requirements-funnel.txt`
+and a Playwright Chromium installation. Run `python3 scripts/doctor.py` to inspect prerequisites.
+Compiled SDKs and editor validation rules ship in `packages/`; no npm install is required.
 
-Codex currently supports plugin installation through a marketplace file. This repo includes a repo-scoped marketplace at `.agents/plugins/marketplace.json`, and that marketplace points to the repository root plugin.
-
-To test this repo as a Codex plugin:
-
-1. Open the repo in Codex.
-2. Restart Codex so it picks up `.agents/plugins/marketplace.json`.
-3. Open the plugin directory and select the repo marketplace.
-4. Install or enable `Reteno`.
-
-For a personal local marketplace on a new machine, use `reteno-plugins` as the marketplace name and `Reteno Plugins` as the marketplace display name.
-
-The Codex plugin manifest lives at:
-
-```text
-.codex-plugin/plugin.json
-```
-
-## Authenticate with Reteno
-
-After installation, authenticate with the Reteno MCP server:
-
-- Claude Code: open `/mcp`, select `reteno`, and complete the OAuth flow.
-- Codex: enable the plugin and complete the MCP authentication prompt on install or first use.
-
-## Included Workflows
-
-### `reteno-email-editor`
-
-Read, clone, and update Reteno email templates through the Reteno MCP server while preserving the original builder HTML and CSS structure. Supports validated text and button copy edits, full translation/localization with per-language CSS and Unicode preservation, and replacement of existing images through Reteno image upload sessions.
-
-### `email-deliverability`
-
-Audit the technical email deliverability setup of a Reteno organization: combine `get_email_deliverability_setup` MCP data with local MXToolbox-like public checks for SPF, DKIM, DMARC, MX, domain resolution, and short-link SSL, then produce Markdown and JSON audit reports.
-
-### `reteno-analytics`
-
-Answer messaging and event analytics questions from live Reteno MCP exports: query `get_messaging_analytics`, `get_events_analytics`, and `get_event_types`, download the signed CSV/JSON exports, and compute rankings and rates from the local rows.
-
-### `web-funnel-analyzer`
-
-Open an onboarding funnel in Playwright, capture screens and text step-by-step, and write a reusable funnel summary for email creation.
-
-## References
-
-- [Anthropic Claude Code plugins](https://code.claude.com/docs/en/plugins)
-- [OpenAI Codex Build plugins](https://developers.openai.com/codex/plugins/build)

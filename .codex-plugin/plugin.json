@@ -1,7 +1,7 @@
 {
   "name": "reteno",
-  "version": "0.3.0",
-  "description": "Reteno's AI agent. Less clicking, more doing.",
+  "version": "0.4.0",
+  "description": "Reteno email creation, editing, localization, images, analytics, deliverability, Business Profile updates, segments and workflows",
   "author": {
     "name": "Reteno",
     "email": "dev@reteno.com",
@@ -10,24 +10,35 @@
   "homepage": "https://github.com/reteno-com/ai-plugin",
   "repository": "https://github.com/reteno-com/ai-plugin",
   "license": "UNLICENSED",
-  "keywords": ["reteno", "email", "funnel", "marketing", "mcp"],
+  "keywords": [
+    "reteno",
+    "email",
+    "funnel",
+    "marketing",
+    "mcp"
+  ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Reteno",
     "shortDescription": "Reteno's AI agent. Less clicking, more doing.",
-    "longDescription": "Meet the Reteno Agent: the teammate who never gets tired, never says \"I'll circle back,\" and is suspiciously enthusiastic about doing the boring stuff for you. It helps your team work with Reteno in Codex or Cowork, answer questions, dig things up, and keep workflows moving without turning every task into a small corporate tragedy. Think of it as an extra pair of hands, except faster, calmer, and much better at remembering where things are.",
+    "longDescription": "Work with Reteno emails, images, analytics, deliverability, business profiles, segments and inactive workflows using validated local SDKs and your authenticated Reteno connection.",
     "developerName": "Reteno",
     "category": "Marketing",
-    "capabilities": ["Read", "Write"],
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
     "websiteURL": "https://reteno.com/",
     "privacyPolicyURL": "https://reteno.com/privacy-policy",
     "termsOfServiceURL": "https://reteno.com/terms-of-use",
     "defaultPrompt": [
-      "Use Reteno to read or update an existing Reteno email message by ID.",
-      "Use Reteno to audit my organization's email deliverability technical setup.",
-      "Use Reteno to summarize messaging performance for the last 7 days.",
-      "Use Reteno to analyze an onboarding funnel URL and produce a step-by-step summary."
+      "Create a Reteno email from my reference and verify its saved desktop and mobile previews.",
+      "Translate and clone a Reteno email while preserving every language, sender and Reply-To.",
+      "Audit my Reteno deliverability setup and identify missing evidence.",
+      "Analyze messaging and audience performance.",
+      "Create a paused Reteno workflow or a dynamic segment.",
+      "Update my Reteno Business Profile from the information I provide."
     ],
     "brandColor": "#FC531F",
     "composerIcon": "./assets/icon.png",
