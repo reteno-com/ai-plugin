@@ -1,0 +1,20 @@
+{
+  "name": "reteno-plugins",
+  "interface": {
+    "displayName": "Reteno Plugins"
+  },
+  "plugins": [
+    {
+      "name": "reteno",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Marketing"
+    }
+  ]
+}

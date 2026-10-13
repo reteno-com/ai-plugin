@@ -1,0 +1,28 @@
+{
+  "files": {
+    ".agents/plugins/marketplace.json": "19efcfca585b49b8ef45cc87d06e569441215b6be4eaf593807d1615f30e63f7",
+    ".claude-plugin/marketplace.json": "6a649461ed8c474654da6f4394221865f42df66a2a6bcf9e1c3d5f2088ca9c8d",
+    ".claude-plugin/plugin.json": "03330dec39fe8347edd18caa06583fa8b18de90a71a41c366cd28a3e06c59c4c",
+    ".codex-plugin/plugin.json": "47708541cda1308080d9108869cb34ded4c509ef91bafe990b09615cbea81864",
+    ".mcp.json": "45fca54af5164057bff795872e102cda8cfec594e204a1455eea265371d70d82",
+    "README.md": "f0e1c568b72820cf23f368b5424c46f72249da46c8bdae50456037d4fb95c950",
+    "assets/icon.png": "176b23ad0bfd9bca35e4b5809edf6d299331ad4037ebd9ed7b3020d5d3487691",
+    "assets/logo.png": "176b23ad0bfd9bca35e4b5809edf6d299331ad4037ebd9ed7b3020d5d3487691",
+    "skills/email-deliverability/SKILL.md": "317637714a065ec2ba35b0e1a5ea84391fe90e5f43e7f66acc926e6dd62504bd",
+    "skills/email-deliverability/agents/openai.yaml": "09a40e1878d376464dfb397ddce542935ea6d9a41964f55359745641bdc9333e",
+    "skills/email-deliverability/scripts/audit_technical_setup.py": "c62e01424d97726a425241debce9cf74aefc24e504b774449cf3fed7dc1d7396",
+    "skills/reteno-analytics/SKILL.md": "f41d951ce2e29f4a93273369072928f025fe6f70c7f26a695c3d29811a94e5c9",
+    "skills/reteno-analytics/agents/openai.yaml": "6a14de862dae5fed73e60514b3706fa41f4c0ffec4cfd22de022c9b85a58e482",
+    "skills/reteno-email-editor/SKILL.md": "313cdc3353b49c32b9947d929e02693c5157e2e1f3dd15e82a749f764025df64",
+    "skills/reteno-email-editor/agents/openai.yaml": "d65a7ff991f2cfdce9b28a912b857695c07f78539b9135cbca542d3072881a12",
+    "skills/reteno-email-editor/scripts/edit_reteno_email_html.py": "6a599706ba9e94f7019a655310fe287ea6ce40d147fcc868282f0abe88947e2c",
+    "skills/reteno-email-editor/scripts/edit_reteno_email_images.py": "981731d0bdc177ffe8dc9e95924f923aa0164ce8020a94a3e823ae1e0c1d882e",
+    "skills/reteno-email-editor/scripts/verify_reteno_email_translation.py": "f9067476522751b35391841763da672b2f821844bd12b97d3517d4f96c28362f",
+    "skills/web-funnel-analyzer/SKILL.md": "f325bbf709171aecedef1b7654dcbc82f79963adee9d5cba2fc1059e6b8c7b34",
+    "skills/web-funnel-analyzer/agents/openai.yaml": "fe572794192368a162084bd43a974f33ae3ac76804b5f56f05df4b4cf8b8cb24",
+    "skills/web-funnel-analyzer/references/output-format.md": "68c7befe964a127a089e9014b16249ff96291a1fc731ff7e96ab9f29dd243c86",
+    "skills/web-funnel-analyzer/scripts/analyze_funnel.py": "f0bee86bc032cfe7d88ade08b45ad1ba8c1679fc674eaf2a95a9206503e56f9a"
+  },
+  "schemaVersion": 1,
+  "version": "0.3.0"
+}

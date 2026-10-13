@@ -1,0 +1,21 @@
+{
+  "name": "reteno-plugins",
+  "owner": {
+    "name": "Reteno",
+    "email": "dev@reteno.com"
+  },
+  "metadata": {
+    "description": "Reteno skills and tools for Claude Code",
+    "version": "0.3.0"
+  },
+  "plugins": [
+    {
+      "name": "reteno",
+      "source": "./",
+      "description": "Reteno email editor, deliverability audits, messaging analytics, web funnel analyzer, and MCP integration",
+      "version": "0.3.0",
+      "category": "marketing",
+      "tags": ["reteno", "email", "funnel", "marketing", "deliverability", "analytics"]
+    }
+  ]
+}
