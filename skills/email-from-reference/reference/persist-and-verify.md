@@ -105,6 +105,9 @@ model.
 Verify the stored subject and sender from the preview manifest's `subject` and `sender`
 fields or the host's authorized metadata read; do not infer hidden metadata from an image.
 
+For intentional inline styling, follow the shared [inline-style verification](../../email-model-editor/reference/persist-and-verify.md#inline-style-verification)
+before judging the saved previews.
+
 Open and visually inspect both PNGs with the host's image-viewing tool. Compare the desktop and
 mobile layouts with the reference intent, including readable text, loaded images, spacing,
 alignment, clipping, and the CTA. A successful tool call or download alone is not visual

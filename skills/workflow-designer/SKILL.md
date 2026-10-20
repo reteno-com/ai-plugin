@@ -5,7 +5,11 @@ description: Design, inspect, clone or edit Reteno workflows using live account 
 
 # Workflow Designer
 
-Read [OPERATING_MANUAL.md](OPERATING_MANUAL.md), then the specific block/config catalogs and
+For one unambiguous existing relative Timer duration edit, use the
+[focused timer procedure](references/focused-timer-edit.md) and Clock catalog only. If the
+request changes timer mode, topology, triggers, settings or activation, use the full procedure.
+
+For other work, read [OPERATING_MANUAL.md](OPERATING_MANUAL.md), then the specific block/config catalogs and
 [SDK reference](references/client/SDK_API_REFERENCE.md) needed for the task. The plugin prepares
 files and requests locally. Reteno MCP runs the remote editor, performs guarded persistence and
 read-back. No local browser integration, publisher proxy or external agent is required.
@@ -25,6 +29,10 @@ read-back. No local browser integration, publisher proxy or external agent is re
 On `workflow_conflict`, re-read and reconcile; never swap in a new hash and blindly replay old
 code. On `commitStatus=unknown`, inspect the retained ID before another mutation. On
 `workflow_editor_at_capacity`, wait `error.retryAfterSeconds` and retry the same arguments once.
+MCP may already perform one editor bootstrap recovery. A response with the expected workflow ID,
+`updated:false`, `failurePhase:"editor"`, `commitStatus:"not_committed"` and `retrySafe:true`
+establishes a pre-save failure; permit at most one client retry. Without all of that evidence,
+re-export before any retry and reconcile the saved state. Do not loop editor restarts.
 Do not retry an ambiguous create. Keep the ID and describe incomplete steps for continuation.
 
 Use `reteno-analytics` / `segment-designer` count mode for audience estimates without creating

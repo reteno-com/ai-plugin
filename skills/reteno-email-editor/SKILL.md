@@ -233,10 +233,15 @@ target-language counterparts. Prefer a clearly matching localized module over tr
 text under the old binding. If no reliable counterpart exists, report the retained binding or
 unresolved requested replacement; never silently substitute a different module family.
 
-1. Discover the selected organization's modules with `list_custom_blocks(query=...)`. Match the
-   requested language, brand, module family and `blockType`; a language match alone is insufficient.
-   Refine the query if `total` exceeds the returned list. Use a real returned ID; ask only when
-   the requested target cannot be resolved. The listing omits HTML/CSS; MCP fetches it internally.
+1. Discover the selected organization's modules with `list_custom_blocks(query=...)`. A visible
+   library identifier supplied by the user is `uid`; the numeric `id` in the matching result is
+   the value used for MCP calls. If a UID query returns nothing, broaden to relevant name words
+   or omit `query`, then match the returned `uid` exactly. An empty UID query does not prove
+   absence. If `total` exceeds the returned list, refine the search before concluding a module
+   is missing. Match language, brand, module family and `blockType`; language alone is insufficient.
+   Use the uniquely matched numeric `id` internally. For missing or ambiguous matches, offer
+   actual returned module names and ask only for the unresolved choice, not a numeric ID.
+   The listing omits HTML/CSS; MCP fetches it internally.
 2. Complete and verify ordinary HTML translation writes first. A new locale must already exist
    before placement. Export the actual destination's current HTML/CSS and identify exactly one
    compatible complete builder `td` using an HTML selector, for example

@@ -292,8 +292,8 @@ type AggregateIntent =
 |---|---|---|
 | `AGGREGATED_SC` | exact event, optional period and criteria | Special predictive events are single-event choices with SDK-managed fixed periods and require an offered criterion. All time is available only for the supported order events. Use only criteria offered for the selected event. |
 | `AGGREGATED_CUSTOM_EVENTS` | exact event, optional date mode, period, criteria, and occurrence | `EVENT_PARAMS.*` criteria must belong to the selected event. First/last-event date modes require a period and do not accept occurrence/count controls. |
-| `AGGREGATED_ACTIVITY` | exact event(s), optional period, criteria, and occurrence | At least one offered non-system criterion is required. Count/rate/response controls are mutually exclusive. |
-| `AGGREGATED_WIDGET_ACTIVITY` | exact opened/clicked event(s), optional period, criteria, and occurrence | Same occurrence restrictions as activity; use only widget-supported events and criteria. |
+| `AGGREGATED_ACTIVITY` | exact event(s), optional period, criteria, and occurrence | At least one offered non-system criterion is required. Count/rate/response controls are mutually exclusive. An event array requires a supported multi-value operator; otherwise use separate single-event aggregates in an OR card. Every selected `ACTIVITY_MEDIA_TYPE` must support every event in that aggregate. |
+| `AGGREGATED_WIDGET_ACTIVITY` | exact opened/clicked event(s), optional period, criteria, and occurrence | Same occurrence and multi-value restrictions as activity; use only widget-supported events and criteria. |
 | `AGGREGATED_PUSH` | exact application ID and compatible criteria | Mobile applications require a nested criterion. Web/mobile application type changes which criteria and OS values are available. Add at most one `PUSH_TOKEN`. |
 | `AGGREGATED_TOKEN` | exact application ID and compatible criteria | Use only criteria offered for the selected application. |
 | `AGGREGATED_CUSTOMER_DATA` | one `source` criterion and optional same-source criteria | Every criterion must use the same source prefix. Do not supply the mapper label manually when the SDK can derive it. |
@@ -310,7 +310,7 @@ type PeriodIntent =
   | {kind: "between"; from: string; to: string; dateColumnId?: string};
 ```
 
-Use only period operators offered by the relevant date definition. Dates use `DD/MM/YYYY`; date-times use `DD/MM/YYYY HH:mm`. Do not pre-convert date-times or manufacture the stored all-time representation.
+Use only period operators offered by the relevant date definition. Ordinary dates use `DD/MM/YYYY`; date-times use `DD/MM/YYYY HH:mm`. Absolute `ACTIVITY_DATE` and `SC_EVENT_DATE` bounds are aggregate date-times and therefore use `DD/MM/YYYY HH:mm` even when their live operator metadata says `DATE`. Pass the editor-local value and let the SDK convert it to UTC. Do not pre-convert date-times or manufacture the stored all-time representation.
 
 ### Occurrence intent
 
@@ -429,6 +429,10 @@ Use `updateCard` or `updateCondition` for targeted changes, `addCard` or `addCon
 
 For `ONE_OF` and other multi-value controls, pass a flat array (or supported comma-separated scalar input), never a backend selection wrapper. For example, use `value: ["5380858", "5380806"]` for `ACTIVITY_CALLOUT_ID`, not `value: {callout: [...]}`. The trusted update runner converts supported backend read shapes before constructing the SDK session; generated mutation code always works with UI-mode values.
 
+An event array is valid only when the current definition offers a supported multi-value operator. If `ACTIVITY_EVENT_ID.ONE_OF` is unavailable, express `Open OR Click` as two activity aggregates with scalar events in one card configured with `conditionRelation: "OR"`. Put common prerequisites in another card joined with `relation: "AND"`. For `neither Open nor Click`, put that OR card in the exclude branch.
+
+For cross-channel `Open OR Click`, do not reuse one media list for both events. Build separate OR aggregates containing only media compatible with each event. In particular, `INAPP` is the exact live In-App option value and supports Open/Click but not Sent/Delivered; and widget activity must use `AGGREGATED_WIDGET_ACTIVITY` instead of adding `WIDGET` to a regular activity media list. When `ACTIVITY_MEDIA_EVENT_MISMATCH` identifies an unsupported pair, remove that pair rather than retrying the same event against every channel.
+
 ## Completion result
 
 ```ts
@@ -457,6 +461,8 @@ Call and return `finish()` exactly once after all mutations. Do not catch a `fin
 | `INVALID_REFERENCE` or `REFERENCE_NOT_FOUND` | Obtain a new reference with `find()`; do not reuse a removed or selection-pruned reference. |
 | `UI_VALUE_RESET` | Verify the cleared value was intended; otherwise repeat the update with the desired compatible value. |
 | `UI_DEPENDENCY_RESET` | Inspect the resulting aggregate and restore only still-intended criteria supported by the new selection. |
+| `ACTIVITY_MEDIA_EVENT_MISMATCH` | Split the media filters by activity event, omit each reported unsupported pair, and combine the compatible aggregates with OR. |
+| `WIDGET_ACTIVITY_FAMILY_REQUIRED` | Move widget Open/Click into an `AGGREGATED_WIDGET_ACTIVITY` aggregate; do not mix `WIDGET` with regular activity media values. |
 | Empty segment/card, managed-criterion, occurrence, or family rule failure | Correct the public operations so the final model is complete; do not hand-author the missing JSON. |
 | `DB_FIELD_IN_UI_MODEL` | Use a UI-mode model; do not guess DB-to-UI conversion. |
 

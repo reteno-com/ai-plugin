@@ -1,5 +1,15 @@
 # Reteno segment operation contract
 
+For system select options, use the live semantic value or ID (for example `EMAIL` or
+`COUNT_OPENED`), never a placeholder `profileInputOptionId: 0`. Custom profile selects still
+serialize their real `profileInputOptionId`. Let the SDK resolve and validate both cases.
+Activity and product-event date controls represent organization-local date-times even when
+their live type is `DATE`; supply the requested local boundaries and the catalog timezone,
+and let the SDK serialize UTC. Ordinary date-only profile fields remain date-only.
+Build cross-channel Open/Click conditions as compatible OR aggregates using live option
+values (`INAPP` where offered). Widget activity uses `AGGREGATED_WIDGET_ACTIVITY` separately.
+Do not force an unsupported media/event pair through validation or enable excluded channels.
+
 The installed plugin includes the compiled SDK, output schema and operator reference. It
 needs Node.js 20.18.1 or newer and Python 3.11 or newer. No publisher session or proxy is used.
 Authentication and tool calls belong to the host. Files are local working artifacts, not

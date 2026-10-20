@@ -2,9 +2,18 @@
 
 This repository contains installable releases of the Reteno plugin.
 
-Reteno 0.4.0 packages the same skills and compiled SDKs for Codex and Claude Code. It uses the
+Reteno 0.4.1 packages the same skills and compiled SDKs for Codex and Claude Code. It uses the
 host's authenticated Reteno MCP connection; local helpers do not need agent tokens, private
 repositories, publisher proxies or control-plane sessions.
+
+## Changes in 0.4.1
+
+- Correct system-option values, organization-local activity date boundaries and cross-channel
+  activity validation in dynamic segments and audience counts.
+- Bundle stable email SDK 0.2.22 with intentional inline CSS edits and saved-style verification.
+- Resolve saved modules by visible UID while using the matched numeric ID for placement.
+- Use workflow-level analytics for workflow totals and label open rates derived from counts.
+- Apply single relative Timer changes with focused instructions, guarded saves and graph checks.
 
 ## Features
 

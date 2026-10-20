@@ -90,6 +90,27 @@ read-back are not success. Preserve the body, sending subject, and unrequested m
 For a preheader-only edit, these saved JSON and compiled-preheader checks complete verification;
 desktop/mobile PNG checks are required when the request also changes visible content.
 
+### Inline-style verification
+
+For intentional inline-style changes, verify the requested CSS properties, values or removals
+on the intended elements in fresh native content against the checked candidate, allowing harmless
+serializer changes in quoting, whitespace, and declaration order. A write receipt does not
+prove the styles were saved. An incorrect local candidate is a mutation failure;
+a correct candidate followed by a native styling mismatch is a persistence discrepancy.
+When the host exposes the saved HTML/CSS export, verify the requested CSS values or removals
+and effective styling on the corresponding compiled elements before judging the PNGs. Correct
+native CSS followed by an unexpected compiled styling mismatch is a compilation or rule
+discrepancy. Report unavailable compiled-style verification explicitly.
+If retained styling still renders incorrectly, inspect the affected elements, applicable rules,
+and layout constraints. A preview showing literal merge placeholders does not establish a
+recipient-data rendering defect.
+
+To undo CSS property changes, reacquire live content and change only properties still matching
+this repair, including continued absence after a removal: restore the acquired value of a
+replaced or removed property, or remove only a newly added property. Preserve concurrent edits,
+links, and merge expressions. Stop on a conflicting value and report it for reconciliation;
+never restore a stale block or model snapshot.
+
 Open and visually inspect both PNG files with the host's image-viewing tool. Check the requested
 visible changes, text readability, image loading, spacing, alignment, clipping, and responsive
 layout. A successful preview call or download alone is not visual verification. Screenshots do

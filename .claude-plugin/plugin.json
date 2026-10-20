@@ -1,7 +1,7 @@
 {
   "name": "reteno",
   "description": "Reteno email creation, editing, localization, images, analytics, deliverability, Business Profile updates, segments and workflows",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": {
     "name": "Reteno",
     "email": "dev@reteno.com"

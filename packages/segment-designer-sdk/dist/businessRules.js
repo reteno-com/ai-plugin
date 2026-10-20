@@ -78,7 +78,7 @@ const MEDIA_EVENT_SUPPORT = new Map([
     ["PULL", ALL_MESSAGE_EVENTS],
     ["PLUTO", ALL_MESSAGE_EVENTS],
     ["TELEGRAM_BOT", new Set(["COUNT_SENT", "COUNT_CLICKED", "COUNT_DELIVERED", "COUNT_FAILED"])],
-    ["IN_APP", new Set(["COUNT_OPENED", "COUNT_CLICKED", "COUNT_FAILED"])],
+    ["INAPP", new Set(["COUNT_OPENED", "COUNT_CLICKED", "COUNT_FAILED"])],
 ]);
 const ACTIVITY_OCCURRENCE_COLUMNS = new Set([
     "ACTIVITY_COUNT",
@@ -95,6 +95,26 @@ function isSimple(value) {
 }
 function isAggregate(value) {
     return "aggregate" in value;
+}
+function activityMediaValues(criterion) {
+    return String(criterion.value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
+}
+function activityMediaCompatibilityIssue(criterion, family, events, path) {
+    if (family !== "AGGREGATED_ACTIVITY" || criterion.column.columnId !== "ACTIVITY_MEDIA_TYPE")
+        return undefined;
+    const mediaValues = activityMediaValues(criterion);
+    if (mediaValues.includes("WIDGET")) {
+        return issue("WIDGET_ACTIVITY_FAMILY_REQUIRED", "WIDGET activity must use AGGREGATED_WIDGET_ACTIVITY and cannot share an ACTIVITY_MEDIA_TYPE selection with other media.", path);
+    }
+    const mismatches = mediaValues.flatMap((media) => {
+        const supported = MEDIA_EVENT_SUPPORT.get(media);
+        return supported === undefined
+            ? []
+            : events.filter((event) => !supported.has(event)).map((event) => `${media} does not support ${event}`);
+    });
+    if (mismatches.length === 0)
+        return undefined;
+    return issue("ACTIVITY_MEDIA_EVENT_MISMATCH", `${mismatches.join("; ")}. Split media filters by activity event and combine the compatible aggregates with OR.`, path);
 }
 function columnIds(condition) {
     return condition.aggregate.conditions
@@ -265,13 +285,9 @@ function validateActivity(condition, family, path) {
             issues.push(issue("ACTIVITY_CRITERION_EVENT_MISMATCH", `${id} is not supported by event ${events.join(", ")}.`, `${path}.aggregate.conditions[${index}]`));
         }
         if (family === "AGGREGATED_ACTIVITY" && id === "ACTIVITY_MEDIA_TYPE") {
-            const mediaValues = String(criterion.value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
-            for (const media of mediaValues) {
-                const supported = MEDIA_EVENT_SUPPORT.get(media);
-                if (supported !== undefined && events.some((event) => !supported.has(event))) {
-                    issues.push(issue("ACTIVITY_MEDIA_EVENT_MISMATCH", `${media} does not support every selected activity event.`, `${path}.aggregate.conditions[${index}]`));
-                }
-            }
+            const compatibilityIssue = activityMediaCompatibilityIssue(criterion, family, events, `${path}.aggregate.conditions[${index}]`);
+            if (compatibilityIssue !== undefined)
+                issues.push(compatibilityIssue);
         }
         if (ACTIVITY_MESSAGE_COLUMNS.has(id ?? "") && typeof criterion.label === "string") {
             try {
@@ -430,11 +446,7 @@ function activityCriterionSupported(criterion, family, events) {
     if (supportedEvents !== undefined && !events.some((event) => supportedEvents.includes(event)))
         return false;
     if (family === "AGGREGATED_ACTIVITY" && id === "ACTIVITY_MEDIA_TYPE") {
-        const mediaValues = String(criterion.value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
-        return mediaValues.every((media) => {
-            const supported = MEDIA_EVENT_SUPPORT.get(media);
-            return supported === undefined || events.every((event) => supported.has(event));
-        });
+        return activityMediaCompatibilityIssue(criterion, family, events) === undefined;
     }
     return true;
 }
@@ -442,6 +454,7 @@ function activityCriterionSupported(criterion, family, events) {
 export function reconcileFrontendAggregate(condition, catalog) {
     const family = inferFamily(condition);
     const removed = [];
+    const compatibilityIssues = new Map();
     let keep = () => true;
     if (family === "AGGREGATED_SC") {
         const events = eventValues(condition, "SC_EVENT_NAME");
@@ -483,7 +496,12 @@ export function reconcileFrontendAggregate(condition, catalog) {
     }
     else if (family === "AGGREGATED_ACTIVITY" || family === "AGGREGATED_WIDGET_ACTIVITY") {
         const events = eventValues(condition, "ACTIVITY_EVENT_ID");
-        keep = (criterion) => activityCriterionSupported(criterion, family, events);
+        keep = (criterion) => {
+            const compatibilityIssue = activityMediaCompatibilityIssue(criterion, family, events);
+            if (compatibilityIssue !== undefined)
+                compatibilityIssues.set(criterion, compatibilityIssue);
+            return compatibilityIssue === undefined && activityCriterionSupported(criterion, family, events);
+        };
     }
     else if (family === "AGGREGATED_PUSH") {
         const selectedApp = condition.aggregate.conditions.find((criterion) => criterion.column.columnId === "PUSH_APPLICATION_ID")?.value;
@@ -521,11 +539,15 @@ export function reconcileFrontendAggregate(condition, catalog) {
     }
     condition.aggregate.conditions = condition.aggregate.conditions.filter((criterion, index) => {
         const retained = keep(criterion, index);
-        if (!retained)
-            removed.push(criterion.column.columnId ?? `criterion ${index + 1}`);
+        if (!retained) {
+            removed.push({
+                columnId: criterion.column.columnId ?? `criterion ${index + 1}`,
+                compatibilityIssue: compatibilityIssues.get(criterion),
+            });
+        }
         return retained;
     });
-    return removed.map((columnId) => issue("UI_DEPENDENCY_RESET", `${columnId} was removed because the controlling aggregate selection no longer offers it.`));
+    return removed.map(({ columnId, compatibilityIssue }) => compatibilityIssue ?? issue("UI_DEPENDENCY_RESET", `${columnId} was removed because the controlling aggregate selection no longer offers it.`));
 }
 function validateAggregate(condition, catalog, path) {
     const issues = [];

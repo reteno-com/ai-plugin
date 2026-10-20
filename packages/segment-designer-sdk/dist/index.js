@@ -13252,6 +13252,7 @@ var NUMBER_TYPES = /* @__PURE__ */ new Set(["INTEGER", "DOUBLE"]);
 var MULTI_OPERATORS = /* @__PURE__ */ new Set(["ONE_OF", "CONTAINS_ONE_OF"]);
 var SYSTEM_COMMA_COLUMNS = /* @__PURE__ */ new Set(["SC_EVENT_NAME", "ACTIVITY_EVENT_ID"]);
 var ACTIVITY_MESSAGE_COLUMNS = /* @__PURE__ */ new Set(["ACTIVITY_MESSAGE_ID", "ACTIVITY_CALLOUT_ID", "ACTIVITY_IMCALLOUT_ID"]);
+var AGGREGATE_LOCAL_DATE_TIME_COLUMNS = /* @__PURE__ */ new Set(["ACTIVITY_DATE", "SC_EVENT_DATE"]);
 var SHORT_YEAR_COLUMNS = /* @__PURE__ */ new Set(["CREATED_DATE_YEAR", "UPDATED_DATE_YEAR", "PUSH_SUBSCRIBED_DATE_YEAR"]);
 var PARAMETER_TYPES = {
   STRING: "TEXT",
@@ -13269,6 +13270,13 @@ function scalarEquals(a, b) {
   if (a === b) return true;
   if (a == null || b == null) return false;
   return String(a) === String(b);
+}
+function isProfileInputDefinition(definition) {
+  return definition.profileInputMetadata != null;
+}
+function optionIdentities(definition, option) {
+  const identities = isProfileInputDefinition(definition) ? [option.profileInputOptionId, option.id, option.value, option.name, option.label, option.description] : [option.value, option.id, option.name, option.label, option.description];
+  return identities.filter((item) => item !== void 0);
 }
 function familyMatches(definition, family) {
   if (family === void 0) return true;
@@ -13291,7 +13299,7 @@ function flattenDefinitions(definitions) {
   const visit = (definition, eventIdentities) => {
     result.push({ definition, eventIdentities });
     for (const option of [...definition.options ?? [], ...definition.profileInputMetadata?.options ?? []]) {
-      const identities = [option.id, option.profileInputOptionId, option.value, option.name, option.label, option.description].filter((item) => item !== void 0);
+      const identities = optionIdentities(definition, option);
       for (const parameter of option.params ?? []) visit(parameter, identities);
     }
   };
@@ -13396,20 +13404,23 @@ var DefinitionCatalog = class {
   }
   findOption(definition, value) {
     return [...definition.options ?? [], ...definition.profileInputMetadata?.options ?? []].find(
-      (option) => option.isSupported !== false && [option.id, option.profileInputOptionId, option.value, option.name, option.label, option.description].some((candidate) => scalarEquals(candidate, value))
+      (option) => option.isSupported !== false && optionIdentities(definition, option).some((candidate) => scalarEquals(candidate, value))
     );
   }
   optionStoredValue(definition, value, preference = "value") {
     const option = this.findOption(definition, value);
     if (option === void 0) return value;
+    if (isProfileInputDefinition(definition)) {
+      return option.profileInputOptionId ?? option.id ?? option.value ?? option.name ?? option.label ?? option.description ?? value;
+    }
     const preferred = preference === "id" ? option.id : option.value;
-    const fallback = preference === "id" ? option.value : option.id ?? option.profileInputOptionId;
-    return preferred ?? fallback ?? option.profileInputOptionId ?? option.name ?? option.label ?? option.description ?? value;
+    const fallback = preference === "id" ? option.value : option.id;
+    return preferred ?? fallback ?? option.name ?? option.label ?? option.description ?? value;
   }
   optionUiValue(definition, value, multiple = false) {
     const option = this.findOption(definition, value);
     if (option === void 0) return multiple ? value : String(value);
-    const raw = option.profileInputOptionId ?? option.value ?? option.id ?? option.name ?? option.label ?? option.description ?? value;
+    const raw = isProfileInputDefinition(definition) ? option.profileInputOptionId ?? option.id ?? option.value ?? option.name ?? option.label ?? option.description ?? value : option.value ?? option.id ?? option.name ?? option.label ?? option.description ?? value;
     return multiple ? raw : String(raw);
   }
   parameterType(condition, family, context = {}) {
@@ -13481,7 +13492,7 @@ var DefinitionCatalog = class {
     let label = options.label;
     const customField = definition.profileInputMetadata != null;
     if (operator.type === "DATETIME") next = customField ? scalarText(next) : this.toUtcDateTime(next);
-    else if (operator.type === "DATE") next = scalarText(next);
+    else if (operator.type === "DATE") next = AGGREGATE_LOCAL_DATE_TIME_COLUMNS.has(definition.columnId ?? "") ? this.toUtcDateTime(next) : scalarText(next);
     else if (operator.type === "DATE_TIME_RANGE") next = asAtoms(next).map((item) => customField ? scalarText(item) : this.toUtcDateTime(item)).join(",");
     else if (operator.type === "RANGE") next = asAtoms(next).map(scalarText).join(",");
     else if (definition.type === "TIME") {
@@ -13577,7 +13588,12 @@ var DefinitionCatalog = class {
       }
     }
     if (operator.type === "DATETIME" && (typeof value !== "string" || !(0, import_moment_timezone.default)(value, DATE_TIME_FORMAT, true).isValid())) issues.push(issue("VALUE_TYPE", `DATETIME requires ${DATE_TIME_FORMAT}.`, `${path}.value`));
-    if (operator.type === "DATE" && (typeof value !== "string" || !(0, import_moment_timezone.default)(value, DATE_FORMAT, true).isValid())) issues.push(issue("VALUE_TYPE", `DATE requires ${DATE_FORMAT}.`, `${path}.value`));
+    if (operator.type === "DATE") {
+      const wireFormat = AGGREGATE_LOCAL_DATE_TIME_COLUMNS.has(definition.columnId ?? "") ? DATE_TIME_FORMAT : DATE_FORMAT;
+      if (typeof value !== "string" || !(0, import_moment_timezone.default)(value, wireFormat, true).isValid()) {
+        issues.push(issue("VALUE_TYPE", `DATE requires ${wireFormat}.`, `${path}.value`));
+      }
+    }
     if (operator.type === "DATE_TIME_RANGE") {
       const dates = typeof value === "string" ? value.split(",").map((item) => (0, import_moment_timezone.default)(item.trim(), DATE_TIME_FORMAT, true)) : [];
       if (dates.length !== 2 || dates.some((item) => !item.isValid())) issues.push(issue("VALUE_TYPE", `DATE_TIME_RANGE requires two ${DATE_TIME_FORMAT} values.`, `${path}.value`));
@@ -13744,7 +13760,7 @@ var MEDIA_EVENT_SUPPORT = /* @__PURE__ */ new Map([
   ["PULL", ALL_MESSAGE_EVENTS],
   ["PLUTO", ALL_MESSAGE_EVENTS],
   ["TELEGRAM_BOT", /* @__PURE__ */ new Set(["COUNT_SENT", "COUNT_CLICKED", "COUNT_DELIVERED", "COUNT_FAILED"])],
-  ["IN_APP", /* @__PURE__ */ new Set(["COUNT_OPENED", "COUNT_CLICKED", "COUNT_FAILED"])]
+  ["INAPP", /* @__PURE__ */ new Set(["COUNT_OPENED", "COUNT_CLICKED", "COUNT_FAILED"])]
 ]);
 var ACTIVITY_OCCURRENCE_COLUMNS = /* @__PURE__ */ new Set([
   "ACTIVITY_COUNT",
@@ -13761,6 +13777,30 @@ function isSimple(value) {
 }
 function isAggregate(value) {
   return "aggregate" in value;
+}
+function activityMediaValues(criterion) {
+  return String(criterion.value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
+}
+function activityMediaCompatibilityIssue(criterion, family, events, path) {
+  if (family !== "AGGREGATED_ACTIVITY" || criterion.column.columnId !== "ACTIVITY_MEDIA_TYPE") return void 0;
+  const mediaValues = activityMediaValues(criterion);
+  if (mediaValues.includes("WIDGET")) {
+    return issue(
+      "WIDGET_ACTIVITY_FAMILY_REQUIRED",
+      "WIDGET activity must use AGGREGATED_WIDGET_ACTIVITY and cannot share an ACTIVITY_MEDIA_TYPE selection with other media.",
+      path
+    );
+  }
+  const mismatches = mediaValues.flatMap((media) => {
+    const supported = MEDIA_EVENT_SUPPORT.get(media);
+    return supported === void 0 ? [] : events.filter((event) => !supported.has(event)).map((event) => `${media} does not support ${event}`);
+  });
+  if (mismatches.length === 0) return void 0;
+  return issue(
+    "ACTIVITY_MEDIA_EVENT_MISMATCH",
+    `${mismatches.join("; ")}. Split media filters by activity event and combine the compatible aggregates with OR.`,
+    path
+  );
 }
 function columnIds(condition) {
   return condition.aggregate.conditions.map((criterion) => criterion.column.columnId).filter((value) => typeof value === "string");
@@ -13908,13 +13948,13 @@ function validateActivity(condition, family, path) {
       issues.push(issue("ACTIVITY_CRITERION_EVENT_MISMATCH", `${id} is not supported by event ${events.join(", ")}.`, `${path}.aggregate.conditions[${index}]`));
     }
     if (family === "AGGREGATED_ACTIVITY" && id === "ACTIVITY_MEDIA_TYPE") {
-      const mediaValues = String(criterion.value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
-      for (const media of mediaValues) {
-        const supported = MEDIA_EVENT_SUPPORT.get(media);
-        if (supported !== void 0 && events.some((event) => !supported.has(event))) {
-          issues.push(issue("ACTIVITY_MEDIA_EVENT_MISMATCH", `${media} does not support every selected activity event.`, `${path}.aggregate.conditions[${index}]`));
-        }
-      }
+      const compatibilityIssue = activityMediaCompatibilityIssue(
+        criterion,
+        family,
+        events,
+        `${path}.aggregate.conditions[${index}]`
+      );
+      if (compatibilityIssue !== void 0) issues.push(compatibilityIssue);
     }
     if (ACTIVITY_MESSAGE_COLUMNS2.has(id ?? "") && typeof criterion.label === "string") {
       try {
@@ -14049,17 +14089,14 @@ function activityCriterionSupported(criterion, family, events) {
   if (supportedEvents === void 0 && !(family === "AGGREGATED_ACTIVITY" && CA_ALWAYS.has(id))) return false;
   if (supportedEvents !== void 0 && !events.some((event) => supportedEvents.includes(event))) return false;
   if (family === "AGGREGATED_ACTIVITY" && id === "ACTIVITY_MEDIA_TYPE") {
-    const mediaValues = String(criterion.value ?? "").split(",").map((item) => item.trim()).filter(Boolean);
-    return mediaValues.every((media) => {
-      const supported = MEDIA_EVENT_SUPPORT.get(media);
-      return supported === void 0 || events.every((event) => supported.has(event));
-    });
+    return activityMediaCompatibilityIssue(criterion, family, events) === void 0;
   }
   return true;
 }
 function reconcileFrontendAggregate(condition, catalog) {
   const family = inferFamily(condition);
   const removed = [];
+  const compatibilityIssues = /* @__PURE__ */ new Map();
   let keep = () => true;
   if (family === "AGGREGATED_SC") {
     const events = eventValues(condition, "SC_EVENT_NAME");
@@ -14097,7 +14134,11 @@ function reconcileFrontendAggregate(condition, catalog) {
     };
   } else if (family === "AGGREGATED_ACTIVITY" || family === "AGGREGATED_WIDGET_ACTIVITY") {
     const events = eventValues(condition, "ACTIVITY_EVENT_ID");
-    keep = (criterion) => activityCriterionSupported(criterion, family, events);
+    keep = (criterion) => {
+      const compatibilityIssue = activityMediaCompatibilityIssue(criterion, family, events);
+      if (compatibilityIssue !== void 0) compatibilityIssues.set(criterion, compatibilityIssue);
+      return compatibilityIssue === void 0 && activityCriterionSupported(criterion, family, events);
+    };
   } else if (family === "AGGREGATED_PUSH") {
     const selectedApp = condition.aggregate.conditions.find((criterion) => criterion.column.columnId === "PUSH_APPLICATION_ID")?.value;
     let appDefinition;
@@ -14128,10 +14169,15 @@ function reconcileFrontendAggregate(condition, catalog) {
   }
   condition.aggregate.conditions = condition.aggregate.conditions.filter((criterion, index) => {
     const retained = keep(criterion, index);
-    if (!retained) removed.push(criterion.column.columnId ?? `criterion ${index + 1}`);
+    if (!retained) {
+      removed.push({
+        columnId: criterion.column.columnId ?? `criterion ${index + 1}`,
+        compatibilityIssue: compatibilityIssues.get(criterion)
+      });
+    }
     return retained;
   });
-  return removed.map((columnId) => issue(
+  return removed.map(({ columnId, compatibilityIssue }) => compatibilityIssue ?? issue(
     "UI_DEPENDENCY_RESET",
     `${columnId} was removed because the controlling aggregate selection no longer offers it.`
   ));
@@ -15225,11 +15271,14 @@ var SegmentSdkSession = class {
       if (oldIndex >= 0) candidate.aggregate.conditions.splice(oldIndex, 1);
     }
     candidate.aggregate.conditions.push(clone3(criterion));
-    reconcileFrontendAggregate(candidate, this.catalog);
+    const reconciliation = reconcileFrontendAggregate(candidate, this.catalog);
     if (!candidate.aggregate.conditions.some((item) => sameJson2(item, criterion))) {
-      throw new SegmentSdkError(`${columnId ?? "The criterion"} is not offered for the aggregate's current selection.`, [
-        issue("CRITERION_NOT_AVAILABLE", "Change the aggregate selection or choose a criterion shown by that selection.")
-      ]);
+      throw new SegmentSdkError(
+        `${columnId ?? "The criterion"} is not offered for the aggregate's current selection.`,
+        reconciliation.length > 0 ? reconciliation : [
+          issue("CRITERION_NOT_AVAILABLE", "Change the aggregate selection or choose a criterion shown by that selection.")
+        ]
+      );
     }
   }
   withDerivedParameters(model) {

@@ -60,8 +60,21 @@ These export defaults do not apply to profile counts. Profile fields describe th
 - `organization` rows include `media_type`, core metrics, `reach`, `frequency`, delivery/open/click/conversion rates, and `revenue`.
 - `workflow` rows add `workflow_id`, `workflow_name`, and `launches`.
 - `message` rows add `workflow_id`, `workflow_name`, `callout_id`, `callout_name`, `message_id`, and `message_subject`.
+- Use `group_by="workflow"` for workflow totals and rankings. Message/callout rows describe
+  message performance and are not additive workflow totals. Do not sum them to reconstruct
+  workflow counts, even when their workflow IDs match. Read `metricScope.countsSource` when
+  present and retain its meaning; compare like groupings, sources, channels and date windows.
+- If `open_rate` is blank but same-row `opened` and `delivered` are valid nonnegative numbers
+  with `delivered > 0`, calculate `100 * opened / delivered` and label it **derived open rate**.
+  Preserve a supplied native rate. Missing counts or a zero denominator mean unavailable,
+  not zero. Do not average row percentages or silently substitute message totals for workflow
+  counts. Flag inconsistent counts instead of presenting an implausible rate as reliable.
 - `spam`, `bounced`, and `unsubscribed` are message-level only.
 - `conversions` is present only when `conversion_event` is supplied. `conversion_event` can be an integer `EventTypeID` or an exact case-insensitive event key/name match.
+- Pass a supplied numeric conversion-event ID directly; resolve names through `get_event_types`.
+  A lookup failure or unavailable event metadata does not prove the ID is invalid. Preserve the
+  exact MCP error and report existence as unverified; do not guess another event or silently
+  remove the conversion filter.
 - `order_by` may use `sent`, `delivered`, `opened`, or `clicked` for all groups. `spam`, `bounced`, and `unsubscribed` are valid only for `group_by="message"`. `conversions` requires `conversion_event`.
 - The finest available grouping level is callout/message. Recipient-domain, mailbox-provider, ISP, bounce-reason, recipient-level delivery errors, raw logs, and date-bucket splits are not available from this MCP analytics tool.
 - Large `group_by="message"` exports can fail upstream for high-volume organizations. If a message-level export returns a 5xx/internal server error, do not keep retrying the same full-range call. Retry with smaller non-overlapping organization-local date shards, download each successful shard, and compute the requested result from local rows. For "unique message IDs and sends" over the last 7 days, use one shard per date, union non-empty `message_id` values for the unique count, and sum the CSV send metric (`sent`/`sends`, whichever column the export provides) across shards. Respect the 10 calls per 60 seconds limit. If any shard still fails, report a partial result and list the failed date shard(s).

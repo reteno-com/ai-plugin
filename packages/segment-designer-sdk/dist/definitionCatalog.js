@@ -6,6 +6,7 @@ const NUMBER_TYPES = new Set(["INTEGER", "DOUBLE"]);
 const MULTI_OPERATORS = new Set(["ONE_OF", "CONTAINS_ONE_OF"]);
 const SYSTEM_COMMA_COLUMNS = new Set(["SC_EVENT_NAME", "ACTIVITY_EVENT_ID"]);
 const ACTIVITY_MESSAGE_COLUMNS = new Set(["ACTIVITY_MESSAGE_ID", "ACTIVITY_CALLOUT_ID", "ACTIVITY_IMCALLOUT_ID"]);
+const AGGREGATE_LOCAL_DATE_TIME_COLUMNS = new Set(["ACTIVITY_DATE", "SC_EVENT_DATE"]);
 const SHORT_YEAR_COLUMNS = new Set(["CREATED_DATE_YEAR", "UPDATED_DATE_YEAR", "PUSH_SUBSCRIBED_DATE_YEAR"]);
 const PARAMETER_TYPES = {
     STRING: "TEXT", EMAIL: "TEXT", TEXT_AREA: "TEXT_AREA", INTEGER: "INTEGER", DOUBLE: "FLOAT", DATE: "DATE",
@@ -18,6 +19,15 @@ function scalarEquals(a, b) {
     if (a == null || b == null)
         return false;
     return String(a) === String(b);
+}
+function isProfileInputDefinition(definition) {
+    return definition.profileInputMetadata != null;
+}
+function optionIdentities(definition, option) {
+    const identities = isProfileInputDefinition(definition)
+        ? [option.profileInputOptionId, option.id, option.value, option.name, option.label, option.description]
+        : [option.value, option.id, option.name, option.label, option.description];
+    return identities.filter((item) => item !== undefined);
 }
 function familyMatches(definition, family) {
     if (family === undefined)
@@ -41,8 +51,7 @@ function flattenDefinitions(definitions) {
     const visit = (definition, eventIdentities) => {
         result.push({ definition, eventIdentities });
         for (const option of [...(definition.options ?? []), ...(definition.profileInputMetadata?.options ?? [])]) {
-            const identities = [option.id, option.profileInputOptionId, option.value, option.name, option.label, option.description]
-                .filter((item) => item !== undefined);
+            const identities = optionIdentities(definition, option);
             for (const parameter of option.params ?? [])
                 visit(parameter, identities);
         }
@@ -156,22 +165,27 @@ export class DefinitionCatalog {
         return { columnId: null, type: definition.type, profileInputId };
     }
     findOption(definition, value) {
-        return [...(definition.options ?? []), ...(definition.profileInputMetadata?.options ?? [])].find((option) => option.isSupported !== false && [option.id, option.profileInputOptionId, option.value, option.name, option.label, option.description]
+        return [...(definition.options ?? []), ...(definition.profileInputMetadata?.options ?? [])].find((option) => option.isSupported !== false && optionIdentities(definition, option)
             .some((candidate) => scalarEquals(candidate, value)));
     }
     optionStoredValue(definition, value, preference = "value") {
         const option = this.findOption(definition, value);
         if (option === undefined)
             return value;
+        if (isProfileInputDefinition(definition)) {
+            return (option.profileInputOptionId ?? option.id ?? option.value ?? option.name ?? option.label ?? option.description ?? value);
+        }
         const preferred = preference === "id" ? option.id : option.value;
-        const fallback = preference === "id" ? option.value : (option.id ?? option.profileInputOptionId);
-        return (preferred ?? fallback ?? option.profileInputOptionId ?? option.name ?? option.label ?? option.description ?? value);
+        const fallback = preference === "id" ? option.value : option.id;
+        return (preferred ?? fallback ?? option.name ?? option.label ?? option.description ?? value);
     }
     optionUiValue(definition, value, multiple = false) {
         const option = this.findOption(definition, value);
         if (option === undefined)
             return multiple ? value : String(value);
-        const raw = option.profileInputOptionId ?? option.value ?? option.id ?? option.name ?? option.label ?? option.description ?? value;
+        const raw = isProfileInputDefinition(definition)
+            ? option.profileInputOptionId ?? option.id ?? option.value ?? option.name ?? option.label ?? option.description ?? value
+            : option.value ?? option.id ?? option.name ?? option.label ?? option.description ?? value;
         return multiple ? raw : String(raw);
     }
     parameterType(condition, family, context = {}) {
@@ -256,7 +270,9 @@ export class DefinitionCatalog {
         if (operator.type === "DATETIME")
             next = customField ? scalarText(next) : this.toUtcDateTime(next);
         else if (operator.type === "DATE")
-            next = scalarText(next);
+            next = AGGREGATE_LOCAL_DATE_TIME_COLUMNS.has(definition.columnId ?? "")
+                ? this.toUtcDateTime(next)
+                : scalarText(next);
         else if (operator.type === "DATE_TIME_RANGE")
             next = asAtoms(next).map((item) => customField ? scalarText(item) : this.toUtcDateTime(item)).join(",");
         else if (operator.type === "RANGE")
@@ -378,8 +394,14 @@ export class DefinitionCatalog {
         }
         if (operator.type === "DATETIME" && (typeof value !== "string" || !moment(value, DATE_TIME_FORMAT, true).isValid()))
             issues.push(issue("VALUE_TYPE", `DATETIME requires ${DATE_TIME_FORMAT}.`, `${path}.value`));
-        if (operator.type === "DATE" && (typeof value !== "string" || !moment(value, DATE_FORMAT, true).isValid()))
-            issues.push(issue("VALUE_TYPE", `DATE requires ${DATE_FORMAT}.`, `${path}.value`));
+        if (operator.type === "DATE") {
+            const wireFormat = AGGREGATE_LOCAL_DATE_TIME_COLUMNS.has(definition.columnId ?? "")
+                ? DATE_TIME_FORMAT
+                : DATE_FORMAT;
+            if (typeof value !== "string" || !moment(value, wireFormat, true).isValid()) {
+                issues.push(issue("VALUE_TYPE", `DATE requires ${wireFormat}.`, `${path}.value`));
+            }
+        }
         if (operator.type === "DATE_TIME_RANGE") {
             const dates = typeof value === "string" ? value.split(",").map((item) => moment(item.trim(), DATE_TIME_FORMAT, true)) : [];
             if (dates.length !== 2 || dates.some((item) => !item.isValid()))

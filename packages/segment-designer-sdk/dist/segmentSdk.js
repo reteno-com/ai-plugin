@@ -560,9 +560,9 @@ class SegmentSdkSession {
                 candidate.aggregate.conditions.splice(oldIndex, 1);
         }
         candidate.aggregate.conditions.push(clone(criterion));
-        reconcileFrontendAggregate(candidate, this.catalog);
+        const reconciliation = reconcileFrontendAggregate(candidate, this.catalog);
         if (!candidate.aggregate.conditions.some((item) => sameJson(item, criterion))) {
-            throw new SegmentSdkError(`${columnId ?? "The criterion"} is not offered for the aggregate's current selection.`, [
+            throw new SegmentSdkError(`${columnId ?? "The criterion"} is not offered for the aggregate's current selection.`, reconciliation.length > 0 ? reconciliation : [
                 issue("CRITERION_NOT_AVAILABLE", "Change the aggregate selection or choose a criterion shown by that selection."),
             ]);
         }
