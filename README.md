@@ -53,3 +53,34 @@ Funnel capture additionally uses `requirements-funnel.txt`
 and a Playwright Chromium installation. Run `python3 scripts/doctor.py` to inspect prerequisites.
 Compiled SDKs and editor validation rules ship in `packages/`; no npm install is required.
 
+## Data and external services
+
+Reteno requires an authorized account connection at `https://mcp.reteno.com`. The skills request
+only the records, content and operations needed for the user's task. They can read customer and
+campaign data and save authorized changes to Reteno. They do not require full conversation history.
+
+Some helpers also make network requests outside the declared MCP connection:
+
+- **Authorized file transfers:** helpers download exports, models, previews and images and upload
+  prepared files using the HTTPS URLs returned by Reteno or explicitly supplied for the task.
+- **Deliverability checks:** the audit helper queries public DNS and checks TLS on the relevant
+  sending or tracking domains. These requests disclose the queried domain and normal connection
+  metadata to the contacted resolver or host.
+- **Funnel analysis:** Playwright opens the user-selected website and walks its quiz with synthetic
+  default answers, stopping at email collection. The website receives normal browser requests and
+  the answers submitted during that navigation. Screenshots and extracted text are saved locally.
+- **Optional OpenAI OCR:** when `OPENAI_API_KEY` is configured and page text is sparse, the funnel
+  helper sends a captured screenshot to OpenAI's Responses API for transcription with
+  `gpt-4.1-mini`. If the key is absent, the helper uses DOM text without this OCR call. Only use
+  this feature for content authorized for processing by that provider.
+
+The bundle also runs packaged Python and Node.js helpers locally in the host environment. Local
+exports, screenshots and working files remain in that workspace until its owner or host removes them.
+Reteno-held customer data follows the applicable customer agreement, DPA and documented instructions;
+retention can exceed 30 days. External providers and the AI client apply their own service terms and
+settings to their copies.
+
+See the [Reteno privacy policy](https://reteno.com/privacy-policy),
+[Data Processing Agreement](https://reteno.com/dpa), and
+[OpenAI privacy information](https://openai.com/policies/privacy-policy/).
+

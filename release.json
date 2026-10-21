@@ -2,10 +2,10 @@
   "files": {
     ".agents/plugins/marketplace.json": "19efcfca585b49b8ef45cc87d06e569441215b6be4eaf593807d1615f30e63f7",
     ".claude-plugin/marketplace.json": "9d0a4adbe194c8aa61e2a166ce2369289e8652131205173f125e574933c63e09",
-    ".claude-plugin/plugin.json": "fcf6e44b5e05237a61001622d31067a7c12f3aa7e8682c548beba8ab57270a86",
+    ".claude-plugin/plugin.json": "1cb8e896757ce719f483d442b8251064ea5ea3d91675745f6eb2db55bfb1cb70",
     ".codex-plugin/plugin.json": "70efb8051435b94cc01fa08c0e6da4e9c30ad2b4a214c3d941f540dbd4f33d5d",
     ".mcp.json": "9e511f1493a275a49e59285eceefc27a236a879af346382f4b569c0b09b160d8",
-    "README.md": "4fa2060925e0ea4e0fa310d0ff7230f7752b11ae59c7aef208159f045ef77dd2",
+    "README.md": "26e5fb398af9b68fdab3ac72b73abf1f0c70a6b922640b33e5a3439aacc747ff",
     "assets/icon.png": "176b23ad0bfd9bca35e4b5809edf6d299331ad4037ebd9ed7b3020d5d3487691",
     "assets/logo.png": "176b23ad0bfd9bca35e4b5809edf6d299331ad4037ebd9ed7b3020d5d3487691",
     "packages/convo-email-agent/content-mutations-15913d881744.js": "5dd428301a7554f08d031d243de289601a156df7d36bfdf90dec19f59e3d8245",
