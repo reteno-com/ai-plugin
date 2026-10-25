@@ -17,8 +17,10 @@ Pattern:
 Sections:
 1. Header metadata: URL, step number, step marker (`X of Y`), detected title/question.
 2. `## DOM text`
-3. `## OCR text` (present if OCR was attempted)
-4. `## Merged text`
+
+Text comes from the page DOM. Text embedded in images or canvases remains visible in the
+local screenshots but is not transcribed. The helper does not upload screenshots to a
+transcription service.
 
 ## Manifest
 

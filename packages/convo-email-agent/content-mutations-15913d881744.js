@@ -584,16 +584,16 @@ function createEmailSdk(options) {
     const entry = entryFor(realId);
     const settings = isObject(entry.element.settings) ? cloneJson(entry.element.settings) : {};
     update(settings, entry);
-    for (const key of ["networks", "items"]) {
-      if (stableJson(settings[key]) !== stableJson(entry.element.settings?.[key])) {
-        addIntent({ replaceCollections: [`/${entry.id}/settings/${key}`] });
+    for (const propertyName of ["networks", "items"]) {
+      if (stableJson(settings[propertyName]) !== stableJson(entry.element.settings?.[propertyName])) {
+        addIntent({ replaceCollections: [`/${entry.id}/settings/${propertyName}`] });
       }
     }
-    for (const key of ["link", "colors"]) {
-      const previous = entry.element.settings?.[key];
-      const next = settings[key];
+    for (const propertyName of ["link", "colors"]) {
+      const previous = entry.element.settings?.[propertyName];
+      const next = settings[propertyName];
       if (isObject(previous) && (!isObject(next) || previous.type !== next.type || previous.mode !== next.mode)) {
-        addIntent({ replaceCollections: [`/${entry.id}/settings/${key}`] });
+        addIntent({ replaceCollections: [`/${entry.id}/settings/${propertyName}`] });
       }
     }
     sdk.setElementProperty(realId, "settings", settings);
@@ -664,15 +664,15 @@ function createEmailSdk(options) {
     if (issues.length) throw new DocumentStateError(issues);
     const result = cloneJson(current);
     const description = schemaForValue(schema, { ...current, ...patch });
-    for (const [key, value] of Object.entries(patch)) {
-      const property = description.properties?.[key];
-      if (!property) throw new EmailSdkError(`Unknown settings key: ${path}.${key}.`);
-      if (resolveSchema(property).readOnly) throw new EmailSdkError(`Read-only settings key: ${path}.${key}.`);
-      if (key === "networks" || key === "items") throw new EmailSdkError(`${path}.${key} must be changed with collection methods.`);
-      if (Array.isArray(value)) throw new EmailSdkError(`${path}.${key} has no declared atomic patch operation.`);
-      const previous = current[key];
+    for (const [propertyName, value] of Object.entries(patch)) {
+      const property = description.properties?.[propertyName];
+      if (!property) throw new EmailSdkError(`Unknown settings key: ${path}.${propertyName}.`);
+      if (resolveSchema(property).readOnly) throw new EmailSdkError(`Read-only settings key: ${path}.${propertyName}.`);
+      if (propertyName === "networks" || propertyName === "items") throw new EmailSdkError(`${path}.${propertyName} must be changed with collection methods.`);
+      if (Array.isArray(value)) throw new EmailSdkError(`${path}.${propertyName} has no declared atomic patch operation.`);
+      const previous = current[propertyName];
       const switchesVariant = isObject(value) && isObject(previous) && ["type", "mode"].some((discriminator) => Object.hasOwn(value, discriminator) && previous[discriminator] !== value[discriminator]);
-      result[key] = isObject(value) ? patchObject(switchesVariant || !isObject(previous) ? {} : previous, value, property, `${path}.${key}`) : cloneJson(value);
+      result[propertyName] = isObject(value) ? patchObject(switchesVariant || !isObject(previous) ? {} : previous, value, property, `${path}.${propertyName}`) : cloneJson(value);
     }
     return result;
   }
@@ -1107,9 +1107,9 @@ function createEmailSdk(options) {
           const defaults = contractDefaults("spacer");
           settings.mode = mode;
           const remove = mode === "line" ? ["height"] : ["width", "border", "mobileBorder", "alignment"];
-          for (const key of remove) {
-            delete settings[key];
-            addIntent({ resetFields: [`/${entry.id}/settings/${key}`] });
+          for (const propertyName of remove) {
+            delete settings[propertyName];
+            addIntent({ resetFields: [`/${entry.id}/settings/${propertyName}`] });
           }
           if (mode === "line") for (const key of ["width", "border", "alignment"]) settings[key] ??= defaults[key];
           else settings.height ??= { desktop: 20, mobile: 20 };

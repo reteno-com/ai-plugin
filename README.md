@@ -68,11 +68,9 @@ Some helpers also make network requests outside the declared MCP connection:
   metadata to the contacted resolver or host.
 - **Funnel analysis:** Playwright opens the user-selected website and walks its quiz with synthetic
   default answers, stopping at email collection. The website receives normal browser requests and
-  the answers submitted during that navigation. Screenshots and extracted text are saved locally.
-- **Optional OpenAI OCR:** when `OPENAI_API_KEY` is configured and page text is sparse, the funnel
-  helper sends a captured screenshot to OpenAI's Responses API for transcription with
-  `gpt-4.1-mini`. If the key is absent, the helper uses DOM text without this OCR call. Only use
-  this feature for content authorized for processing by that provider.
+  the answers submitted during that navigation. Screenshots and visible DOM text are saved locally.
+  Text embedded in images or canvases is not transcribed. The helper does not upload screenshots
+  to a transcription service or use an API key from the user's environment.
 
 The bundle also runs packaged Python and Node.js helpers locally in the host environment. Local
 exports, screenshots and working files remain in that workspace until its owner or host removes them.

@@ -554,11 +554,6 @@ var require_postcss = __commonJS({
           console.warn(
             name + ": postcss.plugin was deprecated. Migration guide:\nhttps://evilmartians.com/chronicles/postcss-8-plugin-migration"
           );
-          if (process.env.LANG && process.env.LANG.startsWith("zh")) {
-            console.warn(
-              name + ": \u91CC\u9762 postcss.plugin \u88AB\u5F03\u7528. \u8FC1\u79FB\u6307\u5357:\nhttps://www.w3ctech.com/topic/2226"
-            );
-          }
         }
         let transformer = initializer(...args);
         transformer.postcssPlugin = name;

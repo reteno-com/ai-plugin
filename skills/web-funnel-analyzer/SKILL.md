@@ -1,6 +1,6 @@
 ---
 name: web-funnel-analyzer
-description: Analyze onboarding funnel quizzes by opening a web URL in Playwright, automatically walking quiz steps, capturing screen-by-screen screenshots, extracting/transcribing text, and generating a funnel summary for email creation. Use when asked to analyze onboarding funnel flow, walk a quiz, capture funnel screens/text, or convert a web funnel into an email brief.
+description: Analyze onboarding funnel quizzes by opening a web URL in Playwright, automatically walking quiz steps, capturing screen-by-screen screenshots, extracting visible DOM text, and generating a funnel summary for email creation. Use when asked to analyze onboarding funnel flow, walk a quiz, capture funnel screens/text, or convert a web funnel into an email brief.
 ---
 
 # Web Funnel Analyzer
@@ -22,7 +22,7 @@ python3 skills/web-funnel-analyzer/scripts/analyze_funnel.py \
 Default behavior:
 - Mobile viewport `390x844`
 - Auto-first answer strategy
-- DOM text extraction with OCR fallback
+- Visible DOM text extraction; screenshots stay in the local output directory.
 - Stop at email capture screen after capturing it (do not submit email)
 
 ## Workflow
@@ -32,8 +32,7 @@ Default behavior:
 3. On each step:
    - capture screenshot
    - extract visible DOM text
-   - run OCR fallback when DOM text is too sparse
-   - save step markdown with merged text
+   - save step markdown with the extracted text
 4. Auto-advance using:
    - first selectable quiz option
    - numeric field defaults when needed:
@@ -70,6 +69,6 @@ Artifacts:
 ## Troubleshooting
 
 - If a step has disabled `Next`, inspect validation hints and adjust default numeric values.
-- If OCR is unavailable (`OPENAI_API_KEY` missing or API error), DOM-only extraction continues and warnings are recorded.
+- Text rendered only inside images or canvases is retained in the screenshots but is not transcribed by this helper.
 - If anti-bot, CAPTCHA, or modal blocks progress, script exits with a clear stop reason in `manifest.json` and `summary.md`.
 - For full output structure and field definitions, read `references/output-format.md`.

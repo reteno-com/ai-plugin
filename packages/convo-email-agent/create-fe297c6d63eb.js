@@ -478,10 +478,10 @@ function createEmailFromDraft(options) {
   function settingsOf(node, label) {
     return node.settings === void 0 ? {} : objectValue(node.settings, `${label}.settings`);
   }
-  function children(node, key, label) {
-    const value = node[key];
-    assertNonEmptyArray(value, `${label}.${key}`);
-    return value.map((child, index) => objectValue(child, `${label}.${key}[${index}]`));
+  function children(node, collectionName, label) {
+    const value = node[collectionName];
+    assertNonEmptyArray(value, `${label}.${collectionName}`);
+    return value.map((child, index) => objectValue(child, `${label}.${collectionName}[${index}]`));
   }
   function fillNode(node, defaults, label) {
     const suppliedId = node.id !== void 0;

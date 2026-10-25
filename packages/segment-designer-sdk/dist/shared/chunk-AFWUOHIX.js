@@ -138,15 +138,15 @@ var require_code = __commonJS({
       return JSON.stringify(x).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
     }
     exports.safeStringify = safeStringify;
-    function getProperty(key) {
-      return typeof key == "string" && exports.IDENTIFIER.test(key) ? new _Code(`.${key}`) : _`[${key}]`;
+    function getProperty(propertyName) {
+      return typeof propertyName == "string" && exports.IDENTIFIER.test(propertyName) ? new _Code(`.${propertyName}`) : _`[${propertyName}]`;
     }
     exports.getProperty = getProperty;
-    function getEsmExportName(key) {
-      if (typeof key == "string" && exports.IDENTIFIER.test(key)) {
-        return new _Code(`${key}`);
+    function getEsmExportName(propertyName) {
+      if (typeof propertyName == "string" && exports.IDENTIFIER.test(propertyName)) {
+        return new _Code(`${propertyName}`);
       }
-      throw new Error(`CodeGen: invalid export name: ${key}, use explicit $id name mapping`);
+      throw new Error(`CodeGen: invalid export name: ${propertyName}, use explicit $id name mapping`);
     }
     exports.getEsmExportName = getEsmExportName;
     function regexpCode(rx) {
@@ -1052,9 +1052,9 @@ var require_util = __commonJS({
       if (typeof schema === "boolean")
         return;
       const rules = self.RULES.keywords;
-      for (const key in schema) {
-        if (!rules[key])
-          checkStrictMode(it, `unknown keyword: "${key}"`);
+      for (const propertyName in schema) {
+        if (!rules[propertyName])
+          checkStrictMode(it, `unknown keyword: "${propertyName}"`);
       }
     }
     exports.checkUnknownRules = checkUnknownRules;
@@ -4671,10 +4671,10 @@ var require_core = __commonJS({
     Ajv.MissingRefError = ref_error_1.default;
     exports.default = Ajv;
     function checkOptions(checkOpts, options, msg, log = "error") {
-      for (const key in checkOpts) {
-        const opt = key;
+      for (const propertyName in checkOpts) {
+        const opt = propertyName;
         if (opt in options)
-          this.logger[log](`${msg}: option ${key}. ${checkOpts[opt]}`);
+          this.logger[log](`${msg}: option ${propertyName}. ${checkOpts[opt]}`);
       }
     }
     function getSchEnv(keyRef) {

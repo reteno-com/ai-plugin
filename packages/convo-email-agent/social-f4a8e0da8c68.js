@@ -248,10 +248,10 @@ function collectSocialDocumentIssues(document) {
         issues.push({ ...issue, instancePath: `${pointer}/settings${issue.path}` });
       }
     }
-    for (const key of CHILD_ARRAYS) {
-      const children = node[key];
+    for (const collectionName of CHILD_ARRAYS) {
+      const children = node[collectionName];
       if (!Array.isArray(children)) continue;
-      children.forEach((child, index) => visit(child, `${pointer}/${key}/${index}`));
+      children.forEach((child, index) => visit(child, `${pointer}/${collectionName}/${index}`));
     }
   };
   visit(document, "");

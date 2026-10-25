@@ -39,7 +39,7 @@ when_to_use: use it when the workflow should send a selected mobile push message
     "recipient": {
       "type": "string",
       "minLength": 1,
-      "description": "Optional mobile-push token override for the recipient device. Use a concrete token value or a variable expression such as `${pushToken}` when the token is resolved at runtime. Leave this empty when the workflow should use the current contact's stored mobile-push token."
+      "description": "Optional mobile-push token override for the recipient device. Prefer leaving this empty to use the current contact's stored mobile-push token. If an override is explicitly requested, use a supplied device token or an existing workflow variable selected from the account's available variables; resolve it within the Reteno workflow."
     },
     "blockDescription": {
       "type": "string",
