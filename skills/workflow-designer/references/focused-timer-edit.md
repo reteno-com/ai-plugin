@@ -9,7 +9,7 @@ the full operating manual. Clarify an ambiguous target before writing.
 1. Confirm the selected organization. Call `get_workflow_export` once, download the artifact
    with `<plugin-root>/scripts/transfer.py`, and retain its ID, organization, `modelHash`, graph
    and start/stop configuration. Resolve the Timer ID and expected old duration/unit from that
-   export; preserve all unrelated nodes, connections, metadata and configuration.
+   downloaded workflow, preserving all unrelated nodes, connections, metadata and configuration.
 2. Write a guarded SDK edit. Use `sdk.findShapes(ShapeType.CLOCK)` to confirm the exact target
    and `sdk.getShapeParams(id)` to assert its old mode and duration. Change only `duration`
    and `durationItem` with `sdk.updateShape`. Duration is a positive integer string; units are
