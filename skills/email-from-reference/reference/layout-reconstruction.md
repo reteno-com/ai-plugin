@@ -65,7 +65,7 @@ layout error. Never flatten native text/controls to an image just to match a scr
 For a centered photo-backed panel, do not put the only image on the stripe while leaving the
 body transparent: Reteno paints that image outside the body and the overlay text can disappear.
 When a native background uses `sizeX: "cover"`, set `sizeY: "auto"`; a `cover`/`cover` pair can
-pass local schema validation but fail the Reteno document-state write. Compare the saved
+satisfy local schema validation but fail the Reteno document-state write. Compare the saved
 photo crop after this adjustment.
 
 For desktop two-column image/quote rows, check `structure.settings.responsiveMobile` in the

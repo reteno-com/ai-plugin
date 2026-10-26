@@ -734,7 +734,7 @@ def _assert_disjoint_blocks(
     splice cannot invalidate the offsets of a later one. That only holds for disjoint
     ranges: when one editable block is nested inside another, replacing the inner
     block both shifts the outer block's cached ``inner_end`` and leaves the outer
-    pass re-scanning text the inner pass already rewrote.
+    replacement re-scanning text the inner replacement already rewrote.
     """
     ordered = sorted(
         matching_blocks,
