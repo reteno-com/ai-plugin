@@ -22,13 +22,13 @@ function parseArgs(argv) {
   }
   return args;
 }
-function requireString(args, key) {
-  const value = optionalString(args, key);
-  if (value === void 0) throw new Error(`Missing required --${key} argument.`);
+function requireString(args, optionName) {
+  const value = optionalString(args, optionName);
+  if (value === void 0) throw new Error(`Missing required --${optionName} argument.`);
   return value;
 }
-function optionalString(args, key) {
-  const value = args[key];
+function optionalString(args, optionName) {
+  const value = args[optionName];
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 }
 function readJson(filePath) {
@@ -78,7 +78,7 @@ function compactError(error) {
     name: typeof fields?.name === "string" ? fields.name : "Error",
     message: String(fields?.message ?? error).slice(0, 2e3),
     ...errors ? { errors } : {},
-    ...Object.fromEntries(["code", "stage", "input", "path", "issues"].flatMap((key) => fields && key in fields ? [[key, fields[key]]] : []))
+    ...Object.fromEntries(["code", "stage", "input", "path", "issues"].flatMap((optionName) => fields && optionName in fields ? [[optionName, fields[optionName]]] : []))
   };
 }
 function resolveSdkDist(startUrl = import.meta.url) {
@@ -134,8 +134,8 @@ function stripHtml(html) {
 function pushLimited(list, value) {
   if (list.length < MAX_ITEMS) list.push(value);
 }
-function count(map, key) {
-  const safeKey = key || "unknown";
+function count(map, optionName) {
+  const safeKey = optionName || "unknown";
   map[safeKey] = (map[safeKey] ?? 0) + 1;
 }
 function linkValue(link) {
@@ -435,9 +435,9 @@ async function main() {
   let sdkPath;
   beginOutputs(outputPath, diagnosticsPath, [inputPath, scriptPath, optionalString(args, "runtime-snapshot")]);
   try {
-    for (const key of Object.keys(args)) {
-      if (!["input", "script", "output", "diagnostics", "schema", "runtime-snapshot"].includes(key)) {
-        throw new Error(`Unknown argument: --${key}`);
+    for (const optionName of Object.keys(args)) {
+      if (!["input", "script", "output", "diagnostics", "schema", "runtime-snapshot"].includes(optionName)) {
+        throw new Error(`Unknown argument: --${optionName}`);
       }
     }
     sdkPath = resolveSdkDist();

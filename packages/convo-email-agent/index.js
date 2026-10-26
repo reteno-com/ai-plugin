@@ -65,8 +65,8 @@ function createEmailValueEditor(email) {
     if (Array.isArray(value)) return Object.freeze(value.map(wrap));
     const handle = /* @__PURE__ */ Object.create(null);
     wrappers.set(value, handle);
-    for (const [key, member] of Object.entries(value)) {
-      if (!structuralMethods.has(key)) handle[key] = wrap(member);
+    for (const [fieldName, member] of Object.entries(value)) {
+      if (!structuralMethods.has(fieldName)) handle[fieldName] = wrap(member);
     }
     return Object.freeze(handle);
   }
@@ -91,8 +91,8 @@ function createBlock(type, input) {
   if (problems.length) throw new DocumentStateError(problems);
   const complete = (defaults, supplied) => {
     if (!isObject(defaults) || !isObject(supplied)) return cloneJson(supplied);
-    if (["mode", "type"].some((key) => supplied[key] !== void 0 && defaults[key] !== void 0 && supplied[key] !== defaults[key])) return cloneJson(supplied);
-    return { ...cloneJson(defaults), ...Object.fromEntries(Object.entries(supplied).map(([key, value]) => [key, complete(defaults[key], value)])) };
+    if (["mode", "type"].some((fieldName) => supplied[fieldName] !== void 0 && defaults[fieldName] !== void 0 && supplied[fieldName] !== defaults[fieldName])) return cloneJson(supplied);
+    return { ...cloneJson(defaults), ...Object.fromEntries(Object.entries(supplied).map(([fieldName, value]) => [fieldName, complete(defaults[fieldName], value)])) };
   };
   const block = { ...cloneJson(input), type, settings: complete(contractDefaults(type), input.settings ?? {}) };
   const result = validateBlock(block);
@@ -108,9 +108,9 @@ function createBlock(type, input) {
   })));
   const checkKeys = (value, parsed, path) => {
     if (Array.isArray(value) && Array.isArray(parsed)) value.forEach((item, index) => checkKeys(item, parsed[index], `${path}.${index}`));
-    else if (isObject(value) && isObject(parsed)) for (const key of Object.keys(value)) {
-      if (!Object.hasOwn(parsed, key)) throw new DocumentStateError([{ code: "UNKNOWN_FIELD", stage: "json", input: "target", path: `${path}.${key}`, message: "Unknown factory field." }]);
-      checkKeys(value[key], parsed[key], `${path}.${key}`);
+    else if (isObject(value) && isObject(parsed)) for (const fieldName of Object.keys(value)) {
+      if (!Object.hasOwn(parsed, fieldName)) throw new DocumentStateError([{ code: "UNKNOWN_FIELD", stage: "json", input: "target", path: `${path}.${fieldName}`, message: "Unknown factory field." }]);
+      checkKeys(value[fieldName], parsed[fieldName], `${path}.${fieldName}`);
     }
   };
   checkKeys(block, result.documentState, type);

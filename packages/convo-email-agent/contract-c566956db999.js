@@ -33,7 +33,7 @@ var manifest_default = {
     "modules/ColorUtils-a33f32974f73.mjs": "4c4189e10d3ba9ab3543f27c7c5557ad6829454a85d8409602bd290db9b0a745",
     "modules/Parser-f35812371386.mjs": "3b2d43a89477a7364e50d1a8b2937f58587f7158e9dee3809c151b5a9cc79fa2",
     "modules/SocialNetworkType-57875c573e3d.mjs": "613717404da6dff18e45050463e6056916620c57ee30c595891ea0fc5f5ae696",
-    "modules/_DataView-3f8d51103b9f.mjs": "f3502d4b1b91312f28d4e12b8de4dd4fc32fcf9393825e31e7a367444aad2810",
+    "modules/_DataView-3f8d51103b9f.mjs": "d3b649e04d5566fbf4820a43777e63a0ebeea34105dd80fd8d6b20cd33f0cd51",
     "modules/_Hash-6a5a8be86833.mjs": "fe97d69789b9a7c4bba78355a5ee6b57e724144b83bd412b028c70492389a12e",
     "modules/_baseSlice-aae12ccd937b.mjs": "da73192b7cfa0967c8a88d4bc2a0b4d4ff75ba32b13a1fe8b8ed6490b5869512",
     "modules/api-7ec6d993fe84.mjs": "a1031ecbe990167de769b05766272d3dbb7a0b4d3c2e7b2dd9585a9fcc9efadc",
@@ -118,8 +118,8 @@ var manifest_default = {
     "modules/vi-b05b5337c3b0.mjs": "62f670e0491a3de45b8919a3026eff3e181c6eb7d537eebfe3d9409a23d9109b",
     "modules/yo-9342d8b90769.mjs": "f77cea978e6a4a95d7f216c6674f7490ea47913071eca8f18ddc259784bac5b4"
   },
-  sizeBytes: 2443075,
-  bundleSha256: "83ed702b41684d11d33c8c76e027ba5c2e1ac4d1e708cf18c36fad3f258b618c"
+  sizeBytes: 2443096,
+  bundleSha256: "0184f19f696cf0d3b957b614e43adb40da6a7450e5b16791fb36a3095690ed5c"
 };
 
 // convo-email-agent/src/sdk/contract.ts
@@ -164,9 +164,9 @@ function nodeCapability(kind) {
 }
 function resolveSchema(node) {
   if (!node.$ref) return node;
-  const resolved = node.$ref.slice(2).split("/").reduce((value, key) => isObject(value) ? value[key] : void 0, schema);
+  const resolved = node.$ref.slice(2).split("/").reduce((value, propertyName) => isObject(value) ? value[propertyName] : void 0, schema);
   if (!isObject(resolved)) throw new Error(`Unresolved contract reference: ${node.$ref}`);
-  return { ...resolveSchema(resolved), ...Object.fromEntries(Object.entries(node).filter(([key]) => key !== "$ref")) };
+  return { ...resolveSchema(resolved), ...Object.fromEntries(Object.entries(node).filter(([propertyName]) => propertyName !== "$ref")) };
 }
 function nodeSchema(kind) {
   const definition = kind in blockKinds ? `${kind}Block` : kind;
@@ -185,9 +185,9 @@ function schemaForValue(node, value) {
   if (!branches) return resolved;
   const candidates = branches.map(resolveSchema).filter((branch) => {
     if (!isObject(value)) return branch.type === typeof value || value === null && branch.type === "null";
-    return Object.entries(branch.properties ?? {}).every(([key, child]) => {
+    return Object.entries(branch.properties ?? {}).every(([propertyName, child]) => {
       const property = resolveSchema(child);
-      return !Object.hasOwn(value, key) || property.const === void 0 && !property.enum || (property.const !== void 0 ? property.const === value[key] : property.enum?.includes(value[key]));
+      return !Object.hasOwn(value, propertyName) || property.const === void 0 && !property.enum || (property.const !== void 0 ? property.const === value[propertyName] : property.enum?.includes(value[propertyName]));
     });
   });
   if (candidates.length === 1) return schemaForValue(candidates[0], value);
@@ -248,10 +248,10 @@ function collectNodeIndex(value) {
       });
     }
     const nextParentChain = ownId === void 0 || ownKind === "block" ? parentChain : [...parentChain, ownId];
-    for (const [key, child] of Object.entries(current)) {
-      const childKind = LIST_KEY_KIND[key];
+    for (const [propertyName, child] of Object.entries(current)) {
+      const childKind = LIST_KEY_KIND[propertyName];
       if (childKind !== void 0) {
-        visit(child, childKind, nextParentChain, ownArea, ownModuleId, hiddenOn, [...path, key]);
+        visit(child, childKind, nextParentChain, ownArea, ownModuleId, hiddenOn, [...path, propertyName]);
       }
     }
   };
@@ -321,7 +321,7 @@ var TYPE_MESSAGE = /^Invalid input: expected (.+?), received (.+)$/u;
 function formatIssue(issue) {
   const path = dotPath(issue.path);
   if (issue.code === "unrecognized_keys" && issue.keys && issue.keys.length > 0) {
-    return issue.keys.map((key) => ({ path, code: issue.code, message: `unsupported property ${JSON.stringify(key)}` }));
+    return issue.keys.map((propertyName) => ({ path, code: issue.code, message: `unsupported property ${JSON.stringify(propertyName)}` }));
   }
   if (issue.code === "invalid_type") {
     const match = TYPE_MESSAGE.exec(issue.message);
@@ -388,8 +388,8 @@ function isSupportedThemeReset(pointer) {
   const keys = pointer.split("/").slice(1);
   if (keys[0] !== "settings" || keys.length < 2) return false;
   let node = getJsonSchema();
-  for (const key of keys) {
-    node = node && resolveSchema(node).properties?.[key];
+  for (const propertyName of keys) {
+    node = node && resolveSchema(node).properties?.[propertyName];
     if (!node) return false;
   }
   return acceptsNull(node);
@@ -412,27 +412,27 @@ function findUnintendedLosses(input, output, intent = {}) {
       if (!permitted(pointer)) lost.push(pointer);
       return;
     }
-    for (const [key, value] of Object.entries(before2)) {
-      const address = `${pointer}/${key}`;
-      if (!Object.hasOwn(after2, key)) {
+    for (const [propertyName, value] of Object.entries(before2)) {
+      const address = `${pointer}/${propertyName}`;
+      if (!Object.hasOwn(after2, propertyName)) {
         if (!permitted(address)) lost.push(address);
-      } else compare(value, after2[key], address);
+      } else compare(value, after2[propertyName], address);
     }
   };
   const before = objectValue(input);
   const after = objectValue(output);
-  for (const key of Object.keys(before)) {
-    if (CHILD_ARRAYS.has(key)) continue;
-    if (!Object.hasOwn(after, key)) {
-      if (!permitted(`/${key}`)) lost.push(`/${key}`);
-    } else compare(before[key], after[key], `/${key}`);
+  for (const propertyName of Object.keys(before)) {
+    if (CHILD_ARRAYS.has(propertyName)) continue;
+    if (!Object.hasOwn(after, propertyName)) {
+      if (!permitted(`/${propertyName}`)) lost.push(`/${propertyName}`);
+    } else compare(before[propertyName], after[propertyName], `/${propertyName}`);
   }
   const remaining = collectNodeIndex(output);
   const occurrences = /* @__PURE__ */ new Map();
   for (const node of collectNodeIndex(input)) {
-    const key = `${node.kind}:${node.id}`;
-    const index = occurrences.get(key) ?? 0;
-    occurrences.set(key, index + 1);
+    const propertyName = `${node.kind}:${node.id}`;
+    const index = occurrences.get(propertyName) ?? 0;
+    occurrences.set(propertyName, index + 1);
     const candidates = remaining.filter((item) => item.id === node.id && item.kind === node.kind);
     const survivor = candidates[index];
     if (!survivor) {
@@ -469,7 +469,7 @@ function normalizedPaths(before, after, path = "") {
   if (Array.isArray(before) && Array.isArray(after) && before.length === after.length) {
     return after.flatMap((value, index) => normalizedPaths(before[index], value, path ? `${path}.${index}` : String(index)));
   }
-  if (isObject(before) && isObject(after)) return [.../* @__PURE__ */ new Set([...Object.keys(before), ...Object.keys(after)])].flatMap((key) => normalizedPaths(before[key], after[key], path ? `${path}.${key}` : key));
+  if (isObject(before) && isObject(after)) return [.../* @__PURE__ */ new Set([...Object.keys(before), ...Object.keys(after)])].flatMap((propertyName) => normalizedPaths(before[propertyName], after[propertyName], path ? `${path}.${propertyName}` : propertyName));
   return [path || "<root>"];
 }
 function jsonIssues(value, input = "target") {
@@ -506,10 +506,10 @@ function jsonIssues(value, input = "target") {
         else if (descriptor.get || descriptor.set || !descriptor.enumerable) fail(`Array entry ${i} is not a JSON data property.`);
         else visit(descriptor.value, `${path}.${i}`);
       }
-      if (Object.getOwnPropertyNames(item).some((key) => key !== "length" && (String(Number(key)) !== key || !Number.isInteger(Number(key)) || Number(key) < 0 || Number(key) >= item.length))) fail("Array properties would be discarded.");
-    } else for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(item))) {
-      if (descriptor.get || descriptor.set || !descriptor.enumerable) fail(`Property ${key} is not a JSON data property.`);
-      else visit(descriptor.value, path === "<root>" ? key : `${path}.${key}`);
+      if (Object.getOwnPropertyNames(item).some((propertyName) => propertyName !== "length" && (String(Number(propertyName)) !== propertyName || !Number.isInteger(Number(propertyName)) || Number(propertyName) < 0 || Number(propertyName) >= item.length))) fail("Array properties would be discarded.");
+    } else for (const [propertyName, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(item))) {
+      if (descriptor.get || descriptor.set || !descriptor.enumerable) fail(`Property ${propertyName} is not a JSON data property.`);
+      else visit(descriptor.value, path === "<root>" ? propertyName : `${path}.${propertyName}`);
     }
     ancestors.delete(item);
   };
@@ -525,12 +525,12 @@ function unknownIssues(value, input) {
       return;
     }
     if (!isObject(value2) || !schema2.properties) return;
-    for (const [key, child] of Object.entries(value2)) {
-      const childPath = path ? `${path}.${key}` : key;
-      if (Object.hasOwn(schema2.properties, key)) visit(child, schema2.properties[key], childPath);
+    for (const [propertyName, child] of Object.entries(value2)) {
+      const childPath = path ? `${path}.${propertyName}` : propertyName;
+      if (Object.hasOwn(schema2.properties, propertyName)) visit(child, schema2.properties[propertyName], childPath);
       else if (isObject(schema2.additionalProperties)) visit(child, schema2.additionalProperties, childPath);
       else issues.push({
-        code: key === "containers" && path.includes("structures.") ? "LEGACY_LAYOUT_UNSUPPORTED" : "UNKNOWN_FIELD",
+        code: propertyName === "containers" && path.includes("structures.") ? "LEGACY_LAYOUT_UNSUPPORTED" : "UNKNOWN_FIELD",
         stage: "json",
         input,
         path: childPath,
@@ -610,12 +610,12 @@ function validateChange({ current, target, intent }) {
         message: `${survivor ? "Moving" : "Deleting"} this node (including through its parent) is not supported by merge-service.`
       });
     }
-    if (survivor) for (const key of capability?.readOnlyProperties ?? []) {
-      if (stableJson(entry.element[key]) !== stableJson(survivor.element[key])) issues.push({
+    if (survivor) for (const propertyName of capability?.readOnlyProperties ?? []) {
+      if (stableJson(entry.element[propertyName]) !== stableJson(survivor.element[propertyName])) issues.push({
         code: "READ_ONLY_FIELD",
         stage: "change",
         input: "target",
-        path: `${entry.id}.${key}`,
+        path: `${entry.id}.${propertyName}`,
         nodeId: entry.id,
         message: "A read-only field changed."
       });
@@ -633,12 +633,12 @@ function validateChange({ current, target, intent }) {
       reason: "INSERT_UNSUPPORTED",
       message: "Inserting this node is unsupported by merge-service."
     });
-    for (const key of capability?.readOnlyProperties ?? []) {
-      if (entry.element[key] !== void 0) issues.push({
+    for (const propertyName of capability?.readOnlyProperties ?? []) {
+      if (entry.element[propertyName] !== void 0) issues.push({
         code: "READ_ONLY_FIELD",
         stage: "change",
         input: "target",
-        path: `${entry.id}.${key}`,
+        path: `${entry.id}.${propertyName}`,
         nodeId: entry.id,
         message: "A read-only field cannot be inserted on a new node. Preserve the existing node or create a detached content copy."
       });

@@ -285,9 +285,9 @@ var require_mapToArray = __commonJS({
 var require_setToArray = __commonJS({
   "../editor/ui-editor-common/node_modules/lodash/_setToArray.js"(exports, module) {
     "use strict";
-    function setToArray(set) {
-      var index = -1, result = Array(set.size);
-      set.forEach(function(value) {
+    function setToArray(collection) {
+      var index = -1, result = Array(collection.size);
+      collection.forEach(function(value) {
         result[++index] = value;
       });
       return result;

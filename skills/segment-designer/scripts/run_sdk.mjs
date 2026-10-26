@@ -28,19 +28,19 @@ const ALLOWED_ARGUMENTS = new Set([
 function parseArgs(argv) {
   const result = {tags: []};
   for (let index = 0; index < argv.length; index += 1) {
-    const token = argv[index];
-    if (!token.startsWith("--")) throw new Error(`Unexpected argument: ${token}`);
-    const key = token.slice(2);
-    if (!ALLOWED_ARGUMENTS.has(key)) throw new Error(`Unsupported argument: --${key}`);
+    const argumentText = argv[index];
+    if (!argumentText.startsWith("--")) throw new Error(`Unexpected argument: ${argumentText}`);
+    const optionName = argumentText.slice(2);
+    if (!ALLOWED_ARGUMENTS.has(optionName)) throw new Error(`Unsupported argument: --${optionName}`);
     const value = argv[index + 1];
-    if (value === undefined || value.startsWith("--")) throw new Error(`Missing value for --${key}`);
-    if (key === "tag") {
+    if (value === undefined || value.startsWith("--")) throw new Error(`Missing value for --${optionName}`);
+    if (optionName === "tag") {
       const normalized = value.trim();
       if (!normalized) throw new Error("--tag must be a non-empty string.");
       if (!result.tags.includes(normalized)) result.tags.push(normalized);
     } else {
-      if (Object.hasOwn(result, key)) throw new Error(`--${key} may be provided only once.`);
-      result[key] = value;
+      if (Object.hasOwn(result, optionName)) throw new Error(`--${optionName} may be provided only once.`);
+      result[optionName] = value;
     }
     index += 1;
   }
@@ -197,7 +197,7 @@ function requireLiveSchema(segmentResult, segmentId) {
 
 async function execute(args) {
   const mode = resolveMode(args);
-  const outputs = ["output", "request", "diagnostics"].map(key => requiredPath(args, key));
+  const outputs = ["output", "request", "diagnostics"].map(optionName => requiredPath(args, optionName));
   const canonical = async file => {
     try { return await realpath(file); }
     catch (error) {
@@ -206,7 +206,7 @@ async function execute(args) {
       return parent === file ? file : path.join(await canonical(parent), path.basename(file));
     }
   };
-  const inputs = await Promise.all(["catalog", "catalog-file", "script", ...(args.input ? ["input"] : [])].map(key => canonical(requiredPath(args, key))));
+  const inputs = await Promise.all(["catalog", "catalog-file", "script", ...(args.input ? ["input"] : [])].map(optionName => canonical(requiredPath(args, optionName))));
   const targets = await Promise.all(outputs.map(canonical));
   if (new Set(targets).size !== targets.length || targets.some(file => inputs.includes(file))) throw new Error("Outputs must differ from every input and each other");
   for (const file of outputs) await rm(file, {force: true});

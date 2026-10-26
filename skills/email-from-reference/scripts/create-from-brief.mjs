@@ -20,13 +20,13 @@ function parseArgs(argv) {
   }
   return args;
 }
-function requireString(args, key) {
-  const value = optionalString(args, key);
-  if (value === void 0) throw new Error(`Missing required --${key} argument.`);
+function requireString(args, fieldName) {
+  const value = optionalString(args, fieldName);
+  if (value === void 0) throw new Error(`Missing required --${fieldName} argument.`);
   return value;
 }
-function optionalString(args, key) {
-  const value = args[key];
+function optionalString(args, fieldName) {
+  const value = args[fieldName];
   return typeof value === "string" && value.trim() !== "" ? value : void 0;
 }
 function readJson(filePath) {
@@ -76,7 +76,7 @@ function compactError(error) {
     name: typeof fields?.name === "string" ? fields.name : "Error",
     message: String(fields?.message ?? error).slice(0, 2e3),
     ...errors ? { errors } : {},
-    ...Object.fromEntries(["code", "stage", "input", "path", "issues"].flatMap((key) => fields && key in fields ? [[key, fields[key]]] : []))
+    ...Object.fromEntries(["code", "stage", "input", "path", "issues"].flatMap((fieldName) => fields && fieldName in fields ? [[fieldName, fields[fieldName]]] : []))
   };
 }
 function resolveSdkDist(startUrl = import.meta.url) {
@@ -132,8 +132,8 @@ function stripHtml(html) {
 function pushLimited(list, value) {
   if (list.length < MAX_ITEMS) list.push(value);
 }
-function count(map, key) {
-  const safeKey = key || "unknown";
+function count(map, fieldName) {
+  const safeKey = fieldName || "unknown";
   map[safeKey] = (map[safeKey] ?? 0) + 1;
 }
 function linkValue(link) {
@@ -388,7 +388,7 @@ function nonEmptyString(value) {
 function detachReferenceModules(model) {
   const detached = [];
   const children = ["stripes", "structures", "columns", "containers", "blocks"];
-  const hasBlocks = (node) => children.some((key) => Array.isArray(node[key]) && node[key].some((value) => isObject3(value) && (key === "blocks" || hasBlocks(value))));
+  const hasBlocks = (node) => children.some((fieldName) => Array.isArray(node[fieldName]) && node[fieldName].some((value) => isObject3(value) && (fieldName === "blocks" || hasBlocks(value))));
   const visit = (node, path2, kind) => {
     if (["stripes", "structures", "containers"].includes(kind) && Object.hasOwn(node, "moduleId")) {
       if (typeof node.moduleId !== "number" || !Number.isFinite(node.moduleId)) {
@@ -400,10 +400,10 @@ function detachReferenceModules(model) {
       detached.push({ path: `${path2}.moduleId`, sourceNodeId: nonEmptyString(node.id), moduleId: node.moduleId });
       delete node.moduleId;
     }
-    for (const key of children) {
-      const rows = node[key];
+    for (const fieldName of children) {
+      const rows = node[fieldName];
       if (Array.isArray(rows)) rows.forEach((value, index) => {
-        if (isObject3(value)) visit(value, `${path2}.${key}[${index}]`, key);
+        if (isObject3(value)) visit(value, `${path2}.${fieldName}[${index}]`, fieldName);
       });
     }
   };
@@ -436,7 +436,7 @@ function backgroundImageFindings(model, exact) {
       if (isObject3(value.backgroundImage) && value.backgroundImage.sizeX === "cover" && value.backgroundImage.sizeY === "cover") {
         findings.push(`${path2}.backgroundImage.sizeY: use "auto" when sizeX is "cover"; this native combination fails Reteno document-state SET`);
       }
-      for (const [key, child] of Object.entries(value)) inspect(child, `${path2}.${key}`);
+      for (const [fieldName, child] of Object.entries(value)) inspect(child, `${path2}.${fieldName}`);
     }
   };
   inspect(model.stripes, "brief.model.stripes");
@@ -457,7 +457,7 @@ function unbreakableRuleFindings(model) {
       if (value.type === "text" && typeof value.content === "string" && /[━─═]{24,}/u.test(value.content)) {
         findings.push(`${path2}.content: repeated rule glyphs force the mobile table wider than the viewport; use a full-width border-top span instead`);
       }
-      for (const [key, child] of Object.entries(value)) inspect(child, `${path2}.${key}`);
+      for (const [fieldName, child] of Object.entries(value)) inspect(child, `${path2}.${fieldName}`);
     }
   };
   inspect(model.stripes, "brief.model.stripes");
@@ -472,12 +472,12 @@ function validateCreationBrief(brief, brand = "reteno") {
   } else if (brand === "stripo") {
     if (nonEmptyString(brief.message.name) === void 0) findings.push("brief.message.name: required non-empty name");
     if (typeof brief.message.name === "string" && brief.message.name.length > 200) findings.push("brief.message.name: maximum 200 characters");
-    for (const key of Object.keys(brief.message)) {
-      if (!["name", "projectId", "folderId", "referenceMode"].includes(key)) findings.push(`brief.message.${key}: unsupported Stripo metadata`);
+    for (const fieldName of Object.keys(brief.message)) {
+      if (!["name", "projectId", "folderId", "referenceMode"].includes(fieldName)) findings.push(`brief.message.${fieldName}: unsupported Stripo metadata`);
     }
-    for (const key of ["projectId", "folderId"]) {
-      const value = brief.message[key];
-      if (value !== void 0 && (!Number.isSafeInteger(value) || value < 1)) findings.push(`brief.message.${key}: expected a positive integer`);
+    for (const fieldName of ["projectId", "folderId"]) {
+      const value = brief.message[fieldName];
+      if (value !== void 0 && (!Number.isSafeInteger(value) || value < 1)) findings.push(`brief.message.${fieldName}: expected a positive integer`);
     }
   } else if (nonEmptyString(brief.message.subject) === void 0) {
     findings.push("brief.message.subject: required non-empty subject");
@@ -499,9 +499,9 @@ function validateCreationBrief(brief, brand = "reteno") {
     findings.push(...backgroundImageFindings(brief.model, isObject3(brief.message) && brief.message.referenceMode === "exact"));
     findings.push(...unbreakableRuleFindings(brief.model));
   }
-  for (const key of Object.keys(brief)) {
-    if (!["v", "note", "sourceSummary", "message", "model"].includes(key)) {
-      findings.push(`brief.${key}: unsupported field; put native editor fields inside brief.model`);
+  for (const fieldName of Object.keys(brief)) {
+    if (!["v", "note", "sourceSummary", "message", "model"].includes(fieldName)) {
+      findings.push(`brief.${fieldName}: unsupported field; put native editor fields inside brief.model`);
     }
   }
   return findings;
