@@ -16,7 +16,7 @@ function deepClone(value) {
 function randomUUID() {
   const cryptoApi = globalThis.crypto;
   if (cryptoApi?.randomUUID !== void 0) return cryptoApi.randomUUID();
-  throw new EditorJsonMutationError("globalThis.crypto.randomUUID is not available; pass idFactory to createEmailMutationSdk.");
+  throw new EditorJsonMutationError("globalThis.crypto.randomUUID is not available. Configure createEmailMutationSdk with an idFactory callback.");
 }
 function regenerateNestedIds(value, nestedIds, usedNestedIds, generateId) {
   const stack = [value];

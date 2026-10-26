@@ -205,7 +205,7 @@ function assertEditorEmailJson(value) {
 function randomUuid(isTaken) {
   const cryptoApi = globalThis.crypto;
   if (cryptoApi?.randomUUID === void 0) {
-    throw new EmailSdkError("globalThis.crypto.randomUUID is not available; pass idFactory to createEmailMutationSdk.");
+    throw new EmailSdkError("globalThis.crypto.randomUUID is not available. Configure createEmailMutationSdk with an idFactory callback.");
   }
   let id = cryptoApi.randomUUID();
   while (isTaken(id)) id = cryptoApi.randomUUID();
@@ -492,7 +492,7 @@ function createEmailSdk(options) {
     if (entries.length === 1 && disambiguateBy === void 0) return entries[0];
     if (disambiguateBy === void 0) {
       throw new EmailSdkError(
-        `id "${rawId}" resolves to ${entries.length} nodes; pass disambiguateBy.occurrence, parentContainerId, or parentStripeId.`
+        `id "${rawId}" resolves to ${entries.length} nodes. Provide disambiguateBy.occurrence, parentContainerId, or parentStripeId.`
       );
     }
     const parentContainerId = disambiguateBy.parentContainerId ?? disambiguateBy.parent_container_id;
@@ -1373,7 +1373,7 @@ function createEmailSdk(options) {
           const contexts = [...new Set(matches.map((slot) => slot.context))].filter((value) => value !== void 0);
           if (context === void 0 && contexts.length > 1) {
             throw new EmailSdkError(
-              `Slot "${role}" is ambiguous in ${label} \u2014 pass a context: ${contexts.map((value) => `slot("${role}", "${value}")`).join(", ")}.`
+              `Slot "${role}" is ambiguous in ${label} \u2014 choose a context: ${contexts.map((value) => `slot("${role}", "${value}")`).join(", ")}.`
             );
           }
           throw new EmailSdkError(
