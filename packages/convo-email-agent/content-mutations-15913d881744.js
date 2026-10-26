@@ -641,16 +641,16 @@ function createEmailSdk(options) {
       if (/^\d+$/u.test(piece)) throw new EmailSdkError(`Theme path rejects array-index segment "${piece}".`);
     }
     const resets = [];
-    const normalize = (child, keys) => {
+    const normalize = (child, themePathSegments) => {
       if (child === void 0 || child === null) {
-        const pointer = "/" + keys.join("/");
+        const pointer = "/" + themePathSegments.join("/");
         if (!isSupportedThemeReset(pointer)) {
-          throw new EmailSdkError(child === null ? `Theme value may not be null at ${keys.join(".")}.` : `No canonical reset is supported for ${keys.join(".")}.`);
+          throw new EmailSdkError(child === null ? `Theme value may not be null at ${themePathSegments.join(".")}.` : `No canonical reset is supported for ${themePathSegments.join(".")}.`);
         }
         resets.push(pointer);
         return null;
       }
-      return isObject(child) ? Object.fromEntries(Object.entries(child).map(([key, nested]) => [key, normalize(nested, [...keys, key])])) : child;
+      return isObject(child) ? Object.fromEntries(Object.entries(child).map(([key, nested]) => [key, normalize(nested, [...themePathSegments, key])])) : child;
     };
     const candidate = normalize(value, pieces);
     const inputIssues = jsonIssues(candidate);

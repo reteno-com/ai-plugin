@@ -3096,7 +3096,7 @@ function getDefaultStripesLineHeight(platform) {
 // editor/ui-editor-ui/src/app/core/background/background-image-layer-composition.ts
 var import_postcss_value_parser = __toESM(require_lib());
 var CSS_GRADIENT_LAYER_PATTERN = /^(?:(?:repeating-)?(?:linear|radial|conic))-gradient\s*\(/i;
-var DYNAMIC_BACKGROUND_VALUE_PATTERN = /\b(?:(?:var|env)\s*\(|currentcolor\b)/i;
+var DYNAMIC_BACKGROUND_VALUE_PATTERN = /\b(?:var\s*\(|env\s*\(|currentcolor\b)/i;
 var IMPORTANT_SUFFIX = /\s*!\s*important\s*$/i;
 var CSS_WIDE_KEYWORDS = /* @__PURE__ */ new Set(["inherit", "initial", "revert", "revert-layer", "unset"]);
 var NON_IMAGE_BACKGROUND_LAYERS = /* @__PURE__ */ new Set(["none", ...CSS_WIDE_KEYWORDS]);

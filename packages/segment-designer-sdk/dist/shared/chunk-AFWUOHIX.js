@@ -2842,20 +2842,20 @@ var require_compile = __commonJS({
     var util_1 = require_util();
     var validate_1 = require_validate();
     var SchemaEnv = class {
-      constructor(env) {
+      constructor(schemaContext) {
         var _a;
         this.refs = {};
         this.dynamicAnchors = {};
         let schema;
-        if (typeof env.schema == "object")
-          schema = env.schema;
-        this.schema = env.schema;
-        this.schemaId = env.schemaId;
-        this.root = env.root || this;
-        this.baseId = (_a = env.baseId) !== null && _a !== void 0 ? _a : (0, resolve_1.normalizeId)(schema === null || schema === void 0 ? void 0 : schema[env.schemaId || "$id"]);
-        this.schemaPath = env.schemaPath;
-        this.localRefs = env.localRefs;
-        this.meta = env.meta;
+        if (typeof schemaContext.schema == "object")
+          schema = schemaContext.schema;
+        this.schema = schemaContext.schema;
+        this.schemaId = schemaContext.schemaId;
+        this.root = schemaContext.root || this;
+        this.baseId = (_a = schemaContext.baseId) !== null && _a !== void 0 ? _a : (0, resolve_1.normalizeId)(schema === null || schema === void 0 ? void 0 : schema[schemaContext.schemaId || "$id"]);
+        this.schemaPath = schemaContext.schemaPath;
+        this.localRefs = schemaContext.localRefs;
+        this.meta = schemaContext.meta;
         this.$async = schema === null || schema === void 0 ? void 0 : schema.$async;
         this.refs = {};
       }
@@ -3039,15 +3039,15 @@ var require_compile = __commonJS({
           baseId = (0, resolve_1.resolveUrl)(this.opts.uriResolver, baseId, schId);
         }
       }
-      let env;
+      let schemaContext;
       if (typeof schema != "boolean" && schema.$ref && !(0, util_1.schemaHasRulesButRef)(schema, this.RULES)) {
         const $ref = (0, resolve_1.resolveUrl)(this.opts.uriResolver, baseId, schema.$ref);
-        env = resolveSchema.call(this, root, $ref);
+        schemaContext = resolveSchema.call(this, root, $ref);
       }
       const { schemaId } = this.opts;
-      env = env || new SchemaEnv({ schema, schemaId, root, baseId });
-      if (env.schema !== env.root.schema)
-        return env;
+      schemaContext = schemaContext || new SchemaEnv({ schema, schemaId, root, baseId });
+      if (schemaContext.schema !== schemaContext.root.schema)
+        return schemaContext;
       return void 0;
     }
   }

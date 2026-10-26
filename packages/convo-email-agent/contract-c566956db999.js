@@ -27,7 +27,7 @@ var manifest_default = {
   files: {
     "NOTICE.txt": "ee40bc55426c522cb974520e8de80f9cdb781ee4502e7701685eabe1427fea6e",
     "index.mjs": "97f4113ff73240f0a2078fe19d0b5aea56d563de2397d39ce61ec7791c2cbb0c",
-    "modules/ArrayUtils-759cc5f22881.mjs": "60e11005fad90d98ab565d7fbdaee9a89e7b23002979b571c767fdecbc161b29",
+    "modules/ArrayUtils-759cc5f22881.mjs": "4c9f27846930bdc5424fb2a76f737a7874bde491e3b4168a663a04c5cbda0061",
     "modules/AttributeConfigMigration-32d6d41af503.mjs": "c55f1650f00f1325fa61fefa859253b8805cc5cf95bb73a47e90acd41ba39f6d",
     "modules/CSSConverter-608b83714731.mjs": "1c8c36013fa7e10e3cd9916cbc41cec8c299b269a675899c737dba5dc17cb1c2",
     "modules/ColorUtils-a33f32974f73.mjs": "4c4189e10d3ba9ab3543f27c7c5557ad6829454a85d8409602bd290db9b0a745",
@@ -118,8 +118,8 @@ var manifest_default = {
     "modules/vi-b05b5337c3b0.mjs": "62f670e0491a3de45b8919a3026eff3e181c6eb7d537eebfe3d9409a23d9109b",
     "modules/yo-9342d8b90769.mjs": "f77cea978e6a4a95d7f216c6674f7490ea47913071eca8f18ddc259784bac5b4"
   },
-  sizeBytes: 2443074,
-  bundleSha256: "aa7e9a008dbc9682aa7fa9355b62ce1f74adc5a3ea85c6f87f67827998b1f398"
+  sizeBytes: 2443075,
+  bundleSha256: "83ed702b41684d11d33c8c76e027ba5c2e1ac4d1e708cf18c36fad3f258b618c"
 };
 
 // convo-email-agent/src/sdk/contract.ts

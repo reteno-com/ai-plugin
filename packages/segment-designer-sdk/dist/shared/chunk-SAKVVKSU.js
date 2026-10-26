@@ -47,8 +47,8 @@ var require_ref = __commonJS({
       schemaType: "string",
       code(cxt) {
         const { gen, schema: $ref, it } = cxt;
-        const { baseId, schemaEnv: env, validateName, opts, self } = it;
-        const { root } = env;
+        const { baseId, schemaEnv: schemaContext, validateName, opts, self } = it;
+        const { root } = schemaContext;
         if (($ref === "#" || $ref === "#/") && baseId === root.baseId)
           return callRootRef();
         const schOrEnv = compile_1.resolveRef.call(self, root, baseId, $ref);
@@ -58,8 +58,8 @@ var require_ref = __commonJS({
           return callValidate(schOrEnv);
         return inlineRefSchema(schOrEnv);
         function callRootRef() {
-          if (env === root)
-            return callRef(cxt, validateName, env, env.$async);
+          if (schemaContext === root)
+            return callRef(cxt, validateName, schemaContext, schemaContext.$async);
           const rootName = gen.scopeValue("root", { ref: root });
           return callRef(cxt, (0, codegen_1._)`${rootName}.validate`, root, root.$async);
         }
@@ -89,14 +89,14 @@ var require_ref = __commonJS({
     exports.getValidate = getValidate;
     function callRef(cxt, v, sch, $async) {
       const { gen, it } = cxt;
-      const { allErrors, schemaEnv: env, opts } = it;
+      const { allErrors, schemaEnv: schemaContext, opts } = it;
       const passCxt = opts.passContext ? names_1.default.this : codegen_1.nil;
       if ($async)
         callAsyncRef();
       else
         callSyncRef();
       function callAsyncRef() {
-        if (!env.$async)
+        if (!schemaContext.$async)
           throw new Error("async schema referenced by sync schema");
         const valid = gen.let("valid");
         gen.try(() => {
@@ -1248,33 +1248,33 @@ var require_patternProperties = __commonJS({
         const { props } = it;
         validatePatternProperties();
         function validatePatternProperties() {
-          for (const pat of patterns) {
+          for (const propertyPattern of patterns) {
             if (checkProperties)
-              checkMatchingProperties(pat);
+              checkMatchingProperties(propertyPattern);
             if (it.allErrors) {
-              validateProperties(pat);
+              validateProperties(propertyPattern);
             } else {
               gen.var(valid, true);
-              validateProperties(pat);
+              validateProperties(propertyPattern);
               gen.if(valid);
             }
           }
         }
-        function checkMatchingProperties(pat) {
+        function checkMatchingProperties(propertyPattern) {
           for (const prop in checkProperties) {
-            if (new RegExp(pat).test(prop)) {
-              (0, util_1.checkStrictMode)(it, `property ${prop} matches pattern ${pat} (use allowMatchingProperties)`);
+            if (new RegExp(propertyPattern).test(prop)) {
+              (0, util_1.checkStrictMode)(it, `property ${prop} matches pattern ${propertyPattern} (use allowMatchingProperties)`);
             }
           }
         }
-        function validateProperties(pat) {
+        function validateProperties(propertyPattern) {
           gen.forIn("key", data, (propertyName) => {
-            gen.if((0, codegen_1._)`${(0, code_1.usePattern)(cxt, pat)}.test(${propertyName})`, () => {
-              const alwaysValid = alwaysValidPatterns.includes(pat);
+            gen.if((0, codegen_1._)`${(0, code_1.usePattern)(cxt, propertyPattern)}.test(${propertyName})`, () => {
+              const alwaysValid = alwaysValidPatterns.includes(propertyPattern);
               if (!alwaysValid) {
                 cxt.subschema({
                   keyword: "patternProperties",
-                  schemaProp: pat,
+                  schemaProp: propertyPattern,
                   dataProp: propertyName,
                   dataPropType: util_2.Type.Str
                 }, valid);
